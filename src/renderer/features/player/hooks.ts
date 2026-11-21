@@ -9,18 +9,20 @@ import {
   type TransportState,
 } from '@renderer/engine';
 import { inputHub } from '@renderer/input';
+import { getHandOverride } from '@renderer/state/handOverrideStore';
 import { useSetting, useSettingsStore } from '@renderer/state/settingsStore';
 
 export type PlayerSession =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; player: Player; song: Song };
+  | { status: 'ready'; player: Player; song: Song; songId: string };
 
 export function usePlayerSession(songId: string): PlayerSession {
   const [session, setSession] = useState<PlayerSession>({ status: 'loading' });
   const [sampler, setSampler] = useState<PianoSampler | null>(null);
   const volume = useSetting('volume');
   const metronome = useSetting('metronome');
+  const otherHand = useSetting('otherHand');
   const player = session.status === 'ready' ? session.player : null;
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export function usePlayerSession(songId: string): PlayerSession {
       const loaded = await loadPianoSampler(ctx);
       if (!live) return;
       const click = new Metronome(ctx, loaded.output);
-      const { practiceMode, metronome: metronomeOn } = useSettingsStore.getState().values;
+      const settings = useSettingsStore.getState().values;
       created = new Player(
         song,
         audioClock(ctx),
@@ -44,10 +46,16 @@ export function usePlayerSession(songId: string): PlayerSession {
           click: (when, accent) => click.click(when, accent),
           resume: () => void ctx.resume(),
         },
-        { mode: practiceMode, metronome: metronomeOn },
+        {
+          mode: settings.practiceMode,
+          metronome: settings.metronome,
+          otherHand: settings.otherHand,
+          focus: 'both',
+          hands: getHandOverride(songId),
+        },
       );
       setSampler(loaded);
-      setSession({ status: 'ready', player: created, song });
+      setSession({ status: 'ready', player: created, song, songId });
     })().catch((error: unknown) => {
       if (live) setSession({ status: 'error', message: String(error) });
     });
@@ -60,6 +68,7 @@ export function usePlayerSession(songId: string): PlayerSession {
 
   useEffect(() => sampler?.setVolume(volume), [sampler, volume]);
   useEffect(() => player?.setMetronome(metronome), [player, metronome]);
+  useEffect(() => player?.setOtherHand(otherHand), [player, otherHand]);
   usePlayerInput(player, sampler);
 
   return session;

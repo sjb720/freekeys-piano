@@ -1,6 +1,7 @@
 import { Midi } from '@tonejs/midi';
-import { handBySplit, handsByTrack, type TrackSummary } from './hands';
+import { handsByTrack, type TrackSummary } from './hands';
 import { beatTicks, measureStartTicks } from './measures';
+import { separateHands } from './separateHands';
 import type { Note, Song } from './types';
 
 const PERCUSSION_CHANNEL = 9;
@@ -28,12 +29,16 @@ export function parseMidi(bytes: Uint8Array, fallbackTitle: string): Song {
         start: n.time,
         duration: n.duration,
         velocity: n.velocity,
-        hand: trackHands?.get(index) ?? handBySplit(n.midi),
+        hand: trackHands?.get(index) ?? 'right',
+        autoHand: trackHands?.get(index) ?? 'right',
         track: index,
       })),
     )
     .sort((a, b) => a.start - b.start || a.pitch - b.pitch);
   notes.forEach((n, i) => (n.id = i));
+  if (!trackHands) {
+    separateHands(notes).forEach((hand, i) => (notes[i]!.hand = notes[i]!.autoHand = hand));
+  }
 
   const endTicks = Math.max(midi.durationTicks, 1);
   const signatures = header.timeSignatures.map((s) => ({
@@ -68,5 +73,6 @@ export function parseMidi(bytes: Uint8Array, fallbackTitle: string): Song {
       max: pitches.length ? Math.max(...pitches) : 72,
     },
     maxNoteDuration: notes.reduce((max, n) => Math.max(max, n.duration), 0),
+    handSource: trackHands ? 'tracks' : 'heuristic',
   };
 }

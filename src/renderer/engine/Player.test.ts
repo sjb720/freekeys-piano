@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Note, Song } from '@shared/song';
-import { Player } from './Player';
+import { Player, type PlayerOptions } from './Player';
 
 const note = (id: number, start: number, pitch: number): Note => ({
   id,
@@ -8,12 +8,13 @@ const note = (id: number, start: number, pitch: number): Note => ({
   start,
   duration: 0.4,
   velocity: 0.8,
-  hand: 'right',
+  hand: pitch < 60 ? 'left' : 'right',
+  autoHand: pitch < 60 ? 'left' : 'right',
   track: 0,
 });
 
 const song = {
-  notes: [note(0, 0, 60), note(1, 1, 62), note(2, 3, 64)],
+  notes: [note(0, 0, 60), note(1, 0, 48), note(2, 1, 62), note(3, 3, 64)],
   beats: [0, 1, 2, 3].map((start) => ({ start, downbeat: start === 0 })),
   measures: [0, 2, 4],
   duration: 4,
@@ -28,8 +29,19 @@ describe('Player', () => {
     click: (when: number) => clicks.push(when),
     resume: () => {},
   };
-  const create = (mode: 'watch' | 'wait' | 'playAlong', metronome = false) =>
-    new Player(song, { now: () => time }, audio, { mode, metronome });
+  const create = (
+    mode: 'watch' | 'wait' | 'playAlong',
+    metronome = false,
+    extra: Partial<PlayerOptions> = {},
+  ) =>
+    new Player(structuredClone(song), { now: () => time }, audio, {
+      mode,
+      metronome,
+      focus: 'both',
+      otherHand: 'play',
+      hands: { kind: 'auto' },
+      ...extra,
+    });
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -50,7 +62,7 @@ describe('Player', () => {
     const player = create('watch');
     player.transport.play();
     run(6.5);
-    expect(played).toEqual([60, 62, 64]);
+    expect(played).toEqual([60, 48, 62, 64]);
     player.destroy();
   });
 
@@ -60,9 +72,42 @@ describe('Player', () => {
     run(5);
     expect(player.position()).toBe(0);
     player.handleInput({ type: 'on', pitch: 60, velocity: 1, source: 'touch' });
+    player.handleInput({ type: 'on', pitch: 48, velocity: 1, source: 'touch' });
     run(1.5);
     expect(player.position()).toBe(1);
     expect(played).toEqual([]);
+    player.destroy();
+  });
+
+  it('plays the other hand when focusing one hand', () => {
+    const player = create('wait', false, { focus: 'right' });
+    player.transport.play();
+    run(2.5);
+    expect(player.position()).toBe(0);
+    player.handleInput({ type: 'on', pitch: 60, velocity: 1, source: 'touch' });
+    run(0.2);
+    expect(played).toEqual([48]);
+    player.destroy();
+  });
+
+  it('mutes the other hand when asked', () => {
+    const player = create('wait', false, { focus: 'right', otherHand: 'mute' });
+    player.transport.play();
+    run(2.5);
+    player.handleInput({ type: 'on', pitch: 60, velocity: 1, source: 'touch' });
+    run(0.2);
+    expect(played).toEqual([]);
+    player.destroy();
+  });
+
+  it('reassigns hands from an override and keeps the auto hand', () => {
+    const player = create('watch');
+    player.setHands({ kind: 'swap' });
+    expect(player.song.notes.map((n) => n.hand)).toEqual(['left', 'right', 'left', 'left']);
+    player.setHands({ kind: 'split', pitch: 62 });
+    expect(player.song.notes.map((n) => n.hand)).toEqual(['left', 'left', 'right', 'right']);
+    player.setHands({ kind: 'auto' });
+    expect(player.song.notes.map((n) => n.hand)).toEqual(['right', 'left', 'right', 'right']);
     player.destroy();
   });
 

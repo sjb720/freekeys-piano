@@ -1,5 +1,5 @@
 import { Container, NineSliceSprite, Sprite, Texture } from 'pixi.js';
-import { forEachNoteInWindow, type Song } from '@shared/song';
+import { forEachNoteInWindow, type Note, type Song } from '@shared/song';
 import type { PixiPalette } from '@renderer/themes';
 import type { KeyLayout } from './keyLayout';
 
@@ -9,6 +9,7 @@ const NOTE_INSET = 2;
 const MIN_NOTE_HEIGHT = 6;
 const CORNER = 6;
 const MARKER = 3;
+const INACTIVE_ALPHA = 0.3;
 
 class Pool<T extends Container> {
   private items: T[] = [];
@@ -98,6 +99,7 @@ export class NoteHighway extends Container {
     area: Area,
     palette: PixiPalette,
     markers: readonly number[] = [],
+    isActive: (note: Note) => boolean = () => true,
   ): void {
     const bottom = area.y + area.height;
     const pxPerSecond = area.height / fallTime;
@@ -130,7 +132,7 @@ export class NoteHighway extends Container {
       sprite.height = Math.max(base - top, MIN_NOTE_HEIGHT);
       const { color, alpha } = palette[note.hand === 'left' ? 'handLeft' : 'handRight'];
       sprite.tint = color;
-      sprite.alpha = alpha;
+      sprite.alpha = isActive(note) ? alpha : alpha * INACTIVE_ALPHA;
     });
     this.notes.release();
 

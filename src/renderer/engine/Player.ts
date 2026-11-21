@@ -1,5 +1,5 @@
-import type { PracticeMode } from '@shared/settings';
-import type { Beat, Note, Song } from '@shared/song';
+import type { HandFocus, OtherHandMode, PracticeMode } from '@shared/settings';
+import { resolveHand, type Beat, type HandOverride, type Note, type Song } from '@shared/song';
 import type { NoteInputEvent } from '@renderer/input';
 import type { Clock } from './clock';
 import { EventScheduler } from './EventScheduler';
@@ -21,13 +21,22 @@ export type PlayerAudio = {
   resume(): void;
 };
 
-export type PlayerState = {
+export type PlayerOptions = {
   mode: PracticeMode;
   metronome: boolean;
+  focus: HandFocus;
+  otherHand: OtherHandMode;
+  hands: HandOverride;
+};
+
+export type PlayerState = PlayerOptions & {
   loop: LoopRegion | null;
   loopDraftStart: number | null;
   stats: PracticeStats;
 };
+
+export const isNoteActive = (note: Note, focus: HandFocus) =>
+  focus === 'both' || note.hand === focus;
 
 export class Player {
   readonly transport: Transport;
@@ -44,14 +53,15 @@ export class Player {
     readonly song: Song,
     clock: Clock,
     private readonly audio: PlayerAudio,
-    options: { mode: PracticeMode; metronome: boolean },
+    options: PlayerOptions,
   ) {
     this.transport = new Transport(clock, { duration: song.duration, start: -LEAD_IN });
     this.state = { ...options, loop: null, loopDraftStart: null, stats: EMPTY_STATS };
-    this.practice = this.createPractice(options.mode);
+    this.applyHands(options.hands);
+    this.practice = this.createPractice();
 
     this.notes = new EventScheduler(song.notes, this.transport, clock, (note, when, rate) => {
-      if (this.state.mode === 'watch' || !this.practice.isActive(note)) {
+      if (this.shouldSound(note)) {
         audio.notes.play(note.pitch, note.velocity, when, note.duration / rate);
       }
     });
@@ -79,6 +89,8 @@ export class Player {
 
   position = (): number => this.transport.position();
 
+  isActive = (note: Note): boolean => isNoteActive(note, this.state.focus);
+
   keyFeedback(): ReadonlyMap<number, KeyFeedback> {
     return this.practice.keyFeedback();
   }
@@ -89,10 +101,20 @@ export class Player {
   }
 
   setMode(mode: PracticeMode): void {
-    if (mode === this.state.mode) return;
-    this.practice.dispose();
-    this.practice = this.createPractice(mode);
-    this.update({ mode, stats: EMPTY_STATS });
+    if (mode !== this.state.mode) this.restartPractice({ mode });
+  }
+
+  setFocus(focus: HandFocus): void {
+    if (focus !== this.state.focus) this.restartPractice({ focus });
+  }
+
+  setHands(hands: HandOverride): void {
+    this.applyHands(hands);
+    this.restartPractice({ hands });
+  }
+
+  setOtherHand(otherHand: OtherHandMode): void {
+    this.update({ otherHand });
   }
 
   setMetronome(metronome: boolean): void {
@@ -126,10 +148,8 @@ export class Player {
   }
 
   restart(): void {
-    this.practice.dispose();
     this.transport.seek(this.state.loop?.start ?? this.transport.getState().start);
-    this.practice = this.createPractice(this.state.mode);
-    this.update({ stats: EMPTY_STATS });
+    this.restartPractice({});
   }
 
   destroy(): void {
@@ -150,13 +170,26 @@ export class Player {
     this.beats.update();
   };
 
-  private createPractice(mode: PracticeMode): PracticeSession {
-    return new PracticeSession(
-      mode,
-      this.song,
-      this.transport,
-      () => true,
-      (stats) => this.update({ stats }),
+  private shouldSound(note: Note): boolean {
+    const { mode, otherHand } = this.state;
+    if (mode === 'watch') return true;
+    return !this.isActive(note) && otherHand === 'play';
+  }
+
+  private applyHands(override: HandOverride): void {
+    for (const note of this.song.notes) note.hand = resolveHand(note, override);
+  }
+
+  private restartPractice(patch: Partial<PlayerState>): void {
+    this.practice.dispose();
+    this.state = { ...this.state, ...patch, stats: EMPTY_STATS };
+    this.practice = this.createPractice();
+    this.update({});
+  }
+
+  private createPractice(): PracticeSession {
+    return new PracticeSession(this.state.mode, this.song, this.transport, this.isActive, (stats) =>
+      this.update({ stats }),
     );
   }
 

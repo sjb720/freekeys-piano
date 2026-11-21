@@ -15,14 +15,16 @@ export function handsByTrack(tracks: TrackSummary[]): Map<number, Hand> | null {
     if (RIGHT_NAME.test(t.name)) hands.set(t.index, 'right');
     else if (LEFT_NAME.test(t.name)) hands.set(t.index, 'left');
   }
-  if (hands.size === tracks.length) return hands;
+  const named = new Set(hands.values());
+  if (hands.size === tracks.length && named.size === 2) return hands;
+  if (tracks.length !== 2) return null;
 
-  const highest = tracks.reduce((a, b) => (b.meanPitch > a.meanPitch ? b : a));
-  for (const t of tracks) {
-    if (hands.has(t.index)) continue;
-    hands.set(t.index, t === highest || t.meanPitch >= SPLIT_PITCH ? 'right' : 'left');
-  }
-  return hands;
+  const [a, b] = tracks as [TrackSummary, TrackSummary];
+  const [high, low] = a.meanPitch >= b.meanPitch ? [a, b] : [b, a];
+  return new Map([
+    [high.index, 'right'],
+    [low.index, 'left'],
+  ]);
 }
 
 export const handBySplit = (pitch: number): Hand => (pitch >= SPLIT_PITCH ? 'right' : 'left');

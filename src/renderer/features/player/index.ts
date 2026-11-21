@@ -1,4 +1,5 @@
 export { formatTime } from './formatTime';
+export { HandsSheet, type HandsSheetProps } from './HandsSheet';
 export {
   usePlayerSession,
   usePlayerState,

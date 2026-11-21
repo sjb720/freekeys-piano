@@ -14,6 +14,7 @@ const note = (start: number, pitch: number, hand: Note['hand'] = 'right'): Note 
   duration: 0.4,
   velocity: 0.8,
   hand,
+  autoHand: hand,
   track: 0,
 });
 

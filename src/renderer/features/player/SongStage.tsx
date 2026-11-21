@@ -34,6 +34,7 @@ export function SongStage({ player }: { player: Player }) {
         song: player.song,
         position: player.position,
         keyStates: () => player.keyFeedback(),
+        isActive: player.isActive,
         markers: () => markersOf(player),
         onKey: (pitch, down) =>
           inputHub.emit({

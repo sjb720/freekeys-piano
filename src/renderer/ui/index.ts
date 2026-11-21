@@ -8,6 +8,7 @@ export {
   type SegmentedControlProps,
   type SegmentOption,
 } from './SegmentedControl';
+export { Sheet, type SheetProps } from './Sheet';
 export { Slider, type SliderProps } from './Slider';
 export { Stack, type StackProps } from './Stack';
 export { Text, type TextProps } from './Text';

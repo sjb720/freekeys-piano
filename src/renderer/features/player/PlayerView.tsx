@@ -25,7 +25,7 @@ export function PlayerView({ songId }: { songId: string }) {
 
   return (
     <Stack grow gap="none">
-      <PlayerToolbar player={session.player} />
+      <PlayerToolbar player={session.player} songId={session.songId} />
       <SongStage player={session.player} />
     </Stack>
   );

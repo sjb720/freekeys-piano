@@ -7,7 +7,7 @@ import {
   type Application,
   type FederatedPointerEvent,
 } from 'pixi.js';
-import { forEachNoteInWindow, type Song } from '@shared/song';
+import { forEachNoteInWindow, type Note, type Song } from '@shared/song';
 import { TINT_NONE, type ColorToken, type PixiPalette } from '@renderer/themes';
 import { fitKeyRange, layoutKeys, type KeyLayout } from './keyLayout';
 import { NoteHighway, type Area } from './NoteHighway';
@@ -25,6 +25,7 @@ export type PianoSceneOptions = {
   song: Song;
   position: () => number;
   keyStates: () => ReadonlyMap<number, KeyState>;
+  isActive: (note: Note) => boolean;
   markers: () => readonly number[];
   onKey: (pitch: number, down: boolean) => void;
   palette: PixiPalette;
@@ -132,6 +133,7 @@ export class PianoScene {
       this.area,
       this.palette,
       this.options.markers(),
+      this.options.isActive,
     );
 
     this.active.clear();

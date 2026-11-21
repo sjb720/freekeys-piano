@@ -7,8 +7,11 @@ export type Note = {
   duration: number;
   velocity: number;
   hand: Hand;
+  autoHand: Hand;
   track: number;
 };
+
+export type HandSource = 'tracks' | 'heuristic';
 
 export type Timed = { start: number };
 
@@ -27,4 +30,5 @@ export type Song = {
   beats: Beat[];
   pitchRange: { min: number; max: number };
   maxNoteDuration: number;
+  handSource: HandSource;
 };

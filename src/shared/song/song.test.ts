@@ -40,13 +40,27 @@ describe('parseMidi', () => {
     ]);
   });
 
-  it('splits a single track at middle C', () => {
+  it('separates a single track with the heuristic', () => {
     const bytes = buildMidi((m) => {
       const t = m.addTrack();
-      t.addNote({ midi: 59, time: 0, duration: 1 });
-      t.addNote({ midi: 60, time: 0, duration: 1 });
+      t.addNote({ midi: 48, time: 0, duration: 1 });
+      t.addNote({ midi: 72, time: 0, duration: 1 });
     });
-    expect(parseMidi(bytes, 'x').notes.map((n) => n.hand)).toEqual(['left', 'right']);
+    const song = parseMidi(bytes, 'x');
+    expect(song.handSource).toBe('heuristic');
+    expect(song.notes.map((n) => [n.hand, n.autoHand])).toEqual([
+      ['left', 'left'],
+      ['right', 'right'],
+    ]);
+  });
+
+  it('uses the heuristic for three or more unnamed tracks', () => {
+    const bytes = buildMidi((m) => {
+      m.addTrack().addNote({ midi: 40, time: 0, duration: 1 });
+      m.addTrack().addNote({ midi: 64, time: 0, duration: 1 });
+      m.addTrack().addNote({ midi: 76, time: 0, duration: 1 });
+    });
+    expect(parseMidi(bytes, 'x').handSource).toBe('heuristic');
   });
 
   it('sorts notes, assigns ids, and computes metadata', () => {
@@ -82,6 +96,19 @@ describe('parseMidi', () => {
 describe('handsByTrack', () => {
   it('returns null for a single track', () => {
     expect(handsByTrack([{ index: 0, name: '', meanPitch: 60 }])).toBeNull();
+  });
+
+  it('uses names for any number of tracks when both hands are named', () => {
+    const hands = handsByTrack([
+      { index: 0, name: 'RH', meanPitch: 50 },
+      { index: 1, name: 'Bass', meanPitch: 70 },
+      { index: 2, name: 'Treble 2', meanPitch: 72 },
+    ]);
+    expect([...hands!.entries()]).toEqual([
+      [0, 'right'],
+      [1, 'left'],
+      [2, 'right'],
+    ]);
   });
 });
 
@@ -135,6 +162,7 @@ describe('query', () => {
     duration,
     velocity: 1,
     hand: 'right',
+    autoHand: 'right',
     track: 0,
   });
   const notes = [note(0, 0, 4), note(1, 1, 0.5), note(2, 2, 0.5), note(3, 5, 1)];

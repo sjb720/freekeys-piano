@@ -27,6 +27,18 @@ export const PRACTICE_MODE_LABELS: Record<PracticeMode, string> = {
   wait: 'Wait',
 };
 
+export const HAND_FOCUSES = ['left', 'both', 'right'] as const;
+export type HandFocus = (typeof HAND_FOCUSES)[number];
+
+export const HAND_FOCUS_LABELS: Record<HandFocus, string> = {
+  left: 'Left',
+  both: 'Both',
+  right: 'Right',
+};
+
+export const OTHER_HAND_MODES = ['play', 'mute'] as const;
+export type OtherHandMode = (typeof OTHER_HAND_MODES)[number];
+
 export const SETTINGS = {
   theme: {
     layer: 'profile',
@@ -45,6 +57,20 @@ export const SETTINGS = {
     control: {
       type: 'segmented',
       options: PRACTICE_MODES.map((value) => ({ value, label: PRACTICE_MODE_LABELS[value] })),
+    },
+  },
+  otherHand: {
+    layer: 'profile',
+    section: 'Practice',
+    label: 'Other hand',
+    description: 'When practicing one hand, the app can play the other hand for you.',
+    default: 'play' as OtherHandMode,
+    control: {
+      type: 'segmented',
+      options: [
+        { value: 'play', label: 'Play it' },
+        { value: 'mute', label: 'Mute it' },
+      ],
     },
   },
   metronome: {
