@@ -1,0 +1,20 @@
+.group {
+  display: inline-flex;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.option {
+  min-height: calc(var(--touch-target) - 2 * var(--space-xs));
+  padding: 0 var(--space-lg);
+  border-radius: var(--radius-sm);
+}
+
+.selected,
+.selected:active:not(:disabled) {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}

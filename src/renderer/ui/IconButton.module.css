@@ -1,0 +1,14 @@
+.iconButton {
+  border-radius: var(--radius-pill);
+  padding: 0;
+}
+
+.md {
+  width: var(--touch-target);
+  height: var(--touch-target);
+}
+
+.lg {
+  width: var(--touch-target-lg);
+  height: var(--touch-target-lg);
+}

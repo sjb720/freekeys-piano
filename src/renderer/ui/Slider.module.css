@@ -1,0 +1,56 @@
+.slider {
+  --track-height: 8px;
+  --thumb-size: 28px;
+
+  appearance: none;
+  height: var(--touch-target);
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.sm {
+  width: 160px;
+}
+
+.md {
+  width: 280px;
+}
+
+.full {
+  width: 100%;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: var(--track-height);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    to right,
+    var(--color-accent) var(--fill),
+    var(--color-surface-raised) var(--fill)
+  );
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
+  border: 3px solid var(--color-bg);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+.slider:focus-visible {
+  outline: none;
+}
+
+.slider:focus-visible::-webkit-slider-thumb {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+}
+
+.slider:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

@@ -1,0 +1,33 @@
+{
+  "id": "light",
+  "name": "Light",
+  "scheme": "light",
+  "colors": {
+    "bg": "#f6f7fb",
+    "surface": "#ffffff",
+    "surfaceRaised": "#eef0f6",
+    "border": "#d9dce6",
+    "text": "#14161c",
+    "textMuted": "#5b6172",
+    "accent": "#5b4be0",
+    "accentHover": "#4c3dd0",
+    "accentActive": "#3f31b8",
+    "textOnAccent": "#ffffff",
+    "danger": "#d93445",
+    "textOnDanger": "#ffffff",
+    "success": "#15955f",
+    "warning": "#c27c0e",
+    "focusRing": "#7a6cf0",
+    "overlay": "rgba(20, 22, 28, 0.45)",
+    "handLeft": "#2563eb",
+    "handRight": "#16a34a",
+    "keyWhite": "#ffffff",
+    "keyBlack": "#1d2027",
+    "keyPressed": "#5b4be0",
+    "keyCorrect": "#16a34a",
+    "keyWrong": "#dc2626",
+    "highwayBg": "#eceef5",
+    "highwayGrid": "#d6d9e3",
+    "hitLine": "#5b4be0"
+  }
+}

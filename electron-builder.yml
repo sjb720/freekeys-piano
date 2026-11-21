@@ -1,0 +1,19 @@
+appId: org.ospianoteacher.app
+productName: Piano Teacher
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+extraResources:
+  - from: resources/songs
+    to: songs
+linux:
+  target: [AppImage, deb]
+  category: Education
+win:
+  target: [nsis]
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

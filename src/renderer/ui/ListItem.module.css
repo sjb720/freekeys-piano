@@ -1,0 +1,33 @@
+.item {
+  width: 100%;
+  min-height: var(--touch-target-lg);
+  padding: var(--space-sm) var(--space-md);
+  border-color: var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  justify-content: flex-start;
+  gap: var(--space-md);
+  text-align: start;
+}
+
+.leading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-accent);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.trailing {
+  color: var(--color-text-muted);
+}
