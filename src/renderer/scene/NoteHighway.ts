@@ -8,6 +8,7 @@ export type Area = { x: number; y: number; width: number; height: number };
 const NOTE_INSET = 2;
 const MIN_NOTE_HEIGHT = 6;
 const CORNER = 6;
+const MARKER = 3;
 
 class Pool<T extends Container> {
   private items: T[] = [];
@@ -41,16 +42,25 @@ export class NoteHighway extends Container {
   private readonly laneLayer = new Container();
   private readonly lineLayer = new Container();
   private readonly noteLayer = new Container();
+  private readonly markerLayer = new Container();
   private readonly lanes: Pool<Sprite>;
   private readonly lines: Pool<Sprite>;
+  private readonly markers: Pool<Sprite>;
   private readonly notes: Pool<NineSliceSprite>;
 
   constructor(noteTexture: Texture) {
     super();
-    this.addChild(this.background, this.laneLayer, this.lineLayer, this.noteLayer);
+    this.addChild(
+      this.background,
+      this.laneLayer,
+      this.lineLayer,
+      this.noteLayer,
+      this.markerLayer,
+    );
     const line = () => new Sprite(Texture.WHITE);
     this.lanes = new Pool(this.laneLayer, line);
     this.lines = new Pool(this.lineLayer, line);
+    this.markers = new Pool(this.markerLayer, line);
     this.notes = new Pool(
       this.noteLayer,
       () =>
@@ -87,6 +97,7 @@ export class NoteHighway extends Container {
     keys: KeyLayout,
     area: Area,
     palette: PixiPalette,
+    markers: readonly number[] = [],
   ): void {
     const bottom = area.y + area.height;
     const pxPerSecond = area.height / fallTime;
@@ -122,5 +133,19 @@ export class NoteHighway extends Container {
       sprite.alpha = alpha;
     });
     this.notes.release();
+
+    for (const time of markers) {
+      if (time < position || time > end) continue;
+      const marker = this.markers.next();
+      Object.assign(marker, {
+        x: area.x,
+        y: bottom - (time - position) * pxPerSecond - MARKER / 2,
+        width: area.width,
+        height: MARKER,
+      });
+      marker.tint = palette.loopMarker.color;
+      marker.alpha = palette.loopMarker.alpha;
+    }
+    this.markers.release();
   }
 }

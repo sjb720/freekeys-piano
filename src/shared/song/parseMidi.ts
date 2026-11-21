@@ -1,6 +1,6 @@
 import { Midi } from '@tonejs/midi';
 import { handBySplit, handsByTrack, type TrackSummary } from './hands';
-import { measureStartTicks } from './measures';
+import { beatTicks, measureStartTicks } from './measures';
 import type { Note, Song } from './types';
 
 const PERCUSSION_CHANNEL = 9;
@@ -36,15 +36,18 @@ export function parseMidi(bytes: Uint8Array, fallbackTitle: string): Song {
   notes.forEach((n, i) => (n.id = i));
 
   const endTicks = Math.max(midi.durationTicks, 1);
-  const measures = measureStartTicks(
-    header.timeSignatures.map((s) => ({
-      ticks: s.ticks,
-      numerator: s.timeSignature[0] ?? 4,
-      denominator: s.timeSignature[1] ?? 4,
-    })),
-    endTicks,
-    header.ppq,
-  ).map((t) => header.ticksToSeconds(t));
+  const signatures = header.timeSignatures.map((s) => ({
+    ticks: s.ticks,
+    numerator: s.timeSignature[0] ?? 4,
+    denominator: s.timeSignature[1] ?? 4,
+  }));
+  const measures = measureStartTicks(signatures, endTicks, header.ppq).map((t) =>
+    header.ticksToSeconds(t),
+  );
+  const beats = beatTicks(signatures, endTicks, header.ppq).map((b) => ({
+    start: header.ticksToSeconds(b.ticks),
+    downbeat: b.downbeat,
+  }));
 
   const pitches = notes.map((n) => n.pitch);
 
@@ -59,6 +62,7 @@ export function parseMidi(bytes: Uint8Array, fallbackTitle: string): Song {
       denominator: s.timeSignature[1] ?? 4,
     })),
     measures,
+    beats,
     pitchRange: {
       min: pitches.length ? Math.min(...pitches) : 60,
       max: pitches.length ? Math.max(...pitches) : 72,

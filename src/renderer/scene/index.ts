@@ -10,4 +10,9 @@ export {
 } from './keyLayout';
 export { NoteHighway, type Area } from './NoteHighway';
 export { PianoKeyboard } from './PianoKeyboard';
-export { PianoScene, type PianoSceneOptions, type ScrubHandlers } from './PianoScene';
+export {
+  PianoScene,
+  type KeyState,
+  type PianoSceneOptions,
+  type ScrubHandlers,
+} from './PianoScene';

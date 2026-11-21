@@ -1,5 +1,5 @@
 export { handBySplit, handsByTrack, SPLIT_PITCH, type TrackSummary } from './hands';
-export { measureStartTicks, type TickTimeSignature } from './measures';
+export { beatTicks, measureStartTicks, type TickBeat, type TickTimeSignature } from './measures';
 export { parseMidi } from './parseMidi';
-export { forEachNoteInWindow, lowerBound } from './query';
-export type { Hand, Note, Song, TempoEvent, TimeSignatureEvent } from './types';
+export { forEachNoteInWindow, lowerBound, measureBounds, measureIndexAt } from './query';
+export type { Beat, Hand, Note, Song, TempoEvent, TimeSignatureEvent, Timed } from './types';

@@ -1,9 +1,9 @@
 import { Midi } from '@tonejs/midi';
 import { describe, expect, it } from 'vitest';
 import { handsByTrack } from './hands';
-import { measureStartTicks } from './measures';
+import { beatTicks, measureStartTicks } from './measures';
 import { parseMidi } from './parseMidi';
-import { forEachNoteInWindow, lowerBound } from './query';
+import { forEachNoteInWindow, lowerBound, measureBounds, measureIndexAt } from './query';
 import type { Note } from './types';
 
 function buildMidi(setup: (midi: Midi) => void): Uint8Array {
@@ -96,6 +96,34 @@ describe('measureStartTicks', () => {
       { ticks: 1440 * 2, numerator: 6, denominator: 8 },
     ];
     expect(measureStartTicks(sigs, 1440 * 4, 480)).toEqual([0, 1440, 2880, 4320]);
+  });
+});
+
+describe('beatTicks', () => {
+  it('marks downbeats per signature', () => {
+    const beats = beatTicks([{ ticks: 0, numerator: 3, denominator: 4 }], 480 * 6, 480);
+    expect(beats.map((b) => b.downbeat)).toEqual([true, false, false, true, false, false]);
+  });
+
+  it('uses the denominator for beat length', () => {
+    const beats = beatTicks([{ ticks: 0, numerator: 6, denominator: 8 }], 240 * 6, 480);
+    expect(beats.map((b) => b.ticks)).toEqual([0, 240, 480, 720, 960, 1200]);
+  });
+});
+
+describe('measures', () => {
+  const song = { measures: [0, 2, 4, 6], duration: 7 };
+
+  it('finds the measure containing a time', () => {
+    expect(measureIndexAt(song, -1)).toBe(0);
+    expect(measureIndexAt(song, 2)).toBe(1);
+    expect(measureIndexAt(song, 5.9)).toBe(2);
+    expect(measureIndexAt(song, 100)).toBe(3);
+  });
+
+  it('returns measure bounds, ending the last at the duration', () => {
+    expect(measureBounds(song, 1)).toEqual({ start: 2, end: 4 });
+    expect(measureBounds(song, 3)).toEqual({ start: 6, end: 7 });
   });
 });
 

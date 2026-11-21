@@ -24,10 +24,11 @@
     "keyWhite": "#f4f5f8",
     "keyBlack": "#14161c",
     "keyPressed": "#8b7bff",
-    "keyCorrect": "#4ade80",
+    "keyCorrect": "#2dd4bf",
     "keyWrong": "#f87171",
     "highwayBg": "#0b0d11",
     "highwayGrid": "#1c2029",
-    "hitLine": "#8b7bff"
+    "hitLine": "#8b7bff",
+    "loopMarker": "#ffb547"
   }
 }

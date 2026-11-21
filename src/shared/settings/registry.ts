@@ -3,7 +3,9 @@ export type SettingLayer = 'app' | 'profile';
 export type SettingControl =
   | { type: 'slider'; min: number; max: number; step: number; format: 'percent' | 'seconds' }
   | { type: 'segmented'; options: readonly { value: string; label: string }[] }
-  | { type: 'theme' };
+  | { type: 'toggle' }
+  | { type: 'theme' }
+  | { type: 'midiDevice' };
 
 export type SettingDef = {
   layer: SettingLayer;
@@ -14,7 +16,16 @@ export type SettingDef = {
   control: SettingControl;
 };
 
-export const SETTING_SECTIONS = ['Appearance', 'Playback', 'Audio'] as const;
+export const SETTING_SECTIONS = ['Appearance', 'Practice', 'Playback', 'Input', 'Audio'] as const;
+
+export const PRACTICE_MODES = ['watch', 'playAlong', 'wait'] as const;
+export type PracticeMode = (typeof PRACTICE_MODES)[number];
+
+export const PRACTICE_MODE_LABELS: Record<PracticeMode, string> = {
+  watch: 'Watch',
+  playAlong: 'Play along',
+  wait: 'Wait',
+};
 
 export const SETTINGS = {
   theme: {
@@ -24,6 +35,25 @@ export const SETTINGS = {
     default: 'dark',
     control: { type: 'theme' },
   },
+  practiceMode: {
+    layer: 'profile',
+    section: 'Practice',
+    label: 'Default mode',
+    description:
+      'Wait pauses at each note until you play it. Play along keeps going and scores you.',
+    default: 'wait' as PracticeMode,
+    control: {
+      type: 'segmented',
+      options: PRACTICE_MODES.map((value) => ({ value, label: PRACTICE_MODE_LABELS[value] })),
+    },
+  },
+  metronome: {
+    layer: 'profile',
+    section: 'Practice',
+    label: 'Metronome',
+    default: false,
+    control: { type: 'toggle' },
+  },
   noteFallTime: {
     layer: 'profile',
     section: 'Playback',
@@ -31,6 +61,14 @@ export const SETTINGS = {
     description: 'How long a note takes to reach the keyboard. Higher is easier to read.',
     default: 3,
     control: { type: 'slider', min: 1, max: 8, step: 0.5, format: 'seconds' },
+  },
+  midiInput: {
+    layer: 'app',
+    section: 'Input',
+    label: 'MIDI keyboard',
+    description: 'Which connected MIDI device to listen to.',
+    default: 'all',
+    control: { type: 'midiDevice' },
   },
   volume: {
     layer: 'app',
@@ -52,6 +90,7 @@ export function defaultSettings(): SettingValues {
 }
 
 export function formatSettingValue(control: SettingControl, value: unknown): string {
+  if (control.type === 'toggle') return value ? 'On' : 'Off';
   if (control.type !== 'slider' || typeof value !== 'number') return String(value);
   return control.format === 'percent' ? `${Math.round(value * 100)}%` : `${value} s`;
 }

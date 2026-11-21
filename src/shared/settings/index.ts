@@ -1,9 +1,12 @@
 export {
   defaultSettings,
   formatSettingValue,
+  PRACTICE_MODE_LABELS,
+  PRACTICE_MODES,
   SETTING_KEYS,
   SETTING_SECTIONS,
   SETTINGS,
+  type PracticeMode,
   type SettingControl,
   type SettingDef,
   type SettingKey,

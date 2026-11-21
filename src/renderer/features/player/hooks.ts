@@ -1,8 +1,15 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { parseMidi, type Song } from '@shared/song';
-import { getAudioContext, loadPianoSampler, type PianoSampler } from '@renderer/audio';
-import { audioClock, Player, type Transport, type TransportState } from '@renderer/engine';
-import { useSetting } from '@renderer/state/settingsStore';
+import { getAudioContext, loadPianoSampler, Metronome, type PianoSampler } from '@renderer/audio';
+import {
+  audioClock,
+  Player,
+  type PlayerState,
+  type Transport,
+  type TransportState,
+} from '@renderer/engine';
+import { inputHub } from '@renderer/input';
+import { useSetting, useSettingsStore } from '@renderer/state/settingsStore';
 
 export type PlayerSession =
   | { status: 'loading' }
@@ -13,9 +20,11 @@ export function usePlayerSession(songId: string): PlayerSession {
   const [session, setSession] = useState<PlayerSession>({ status: 'loading' });
   const [sampler, setSampler] = useState<PianoSampler | null>(null);
   const volume = useSetting('volume');
+  const metronome = useSetting('metronome');
+  const player = session.status === 'ready' ? session.player : null;
 
   useEffect(() => {
-    let player: Player | null = null;
+    let created: Player | null = null;
     let live = true;
 
     (async () => {
@@ -25,26 +34,65 @@ export function usePlayerSession(songId: string): PlayerSession {
       const ctx = getAudioContext();
       const loaded = await loadPianoSampler(ctx);
       if (!live) return;
-      player = new Player(song, audioClock(ctx), loaded, () => void ctx.resume());
+      const click = new Metronome(ctx, loaded.output);
+      const { practiceMode, metronome: metronomeOn } = useSettingsStore.getState().values;
+      created = new Player(
+        song,
+        audioClock(ctx),
+        {
+          notes: loaded,
+          click: (when, accent) => click.click(when, accent),
+          resume: () => void ctx.resume(),
+        },
+        { mode: practiceMode, metronome: metronomeOn },
+      );
       setSampler(loaded);
-      setSession({ status: 'ready', player, song });
+      setSession({ status: 'ready', player: created, song });
     })().catch((error: unknown) => {
       if (live) setSession({ status: 'error', message: String(error) });
     });
 
     return () => {
       live = false;
-      player?.destroy();
+      created?.destroy();
     };
   }, [songId]);
 
   useEffect(() => sampler?.setVolume(volume), [sampler, volume]);
+  useEffect(() => player?.setMetronome(metronome), [player, metronome]);
+  usePlayerInput(player, sampler);
 
   return session;
 }
 
+function usePlayerInput(player: Player | null, sampler: PianoSampler | null): void {
+  useEffect(() => {
+    if (!player) return;
+    const voices = new Map<number, () => void>();
+    const unsubscribe = inputHub.subscribe((event) => {
+      player.handleInput(event);
+      if (event.source !== 'touch' || !sampler) return;
+      voices.get(event.pitch)?.();
+      voices.delete(event.pitch);
+      if (event.type === 'on') {
+        const release = sampler.noteOn(event.pitch, event.velocity);
+        if (release) voices.set(event.pitch, release);
+      }
+    });
+    return () => {
+      unsubscribe();
+      inputHub.releaseSource('touch');
+      for (const release of voices.values()) release();
+    };
+  }, [player, sampler]);
+}
+
 export function useTransportState(transport: Transport): TransportState {
   return useSyncExternalStore(transport.subscribe, transport.getState);
+}
+
+export function usePlayerState(player: Player): PlayerState {
+  return useSyncExternalStore(player.subscribe, player.getState);
 }
 
 export function usePosition(player: Player, fps = 15): number {

@@ -15,6 +15,7 @@ export const MAX_RATE = 1.5;
 export class Transport {
   private anchorPosition: number;
   private anchorTime = 0;
+  private gate: number | null = null;
   private state: TransportState;
   private listeners = new Set<(event: TransportEvent) => void>();
 
@@ -35,9 +36,21 @@ export class Transport {
   };
 
   position(): number {
-    if (!this.state.playing) return this.anchorPosition;
-    const elapsed = (this.clock.now() - this.anchorTime) * this.state.rate;
-    return Math.min(this.anchorPosition + elapsed, this.state.duration);
+    const raw = this.state.playing
+      ? this.anchorPosition + (this.clock.now() - this.anchorTime) * this.state.rate
+      : this.anchorPosition;
+    const clamped = Math.min(raw, this.state.duration);
+    return this.gate === null ? clamped : Math.min(clamped, this.gate);
+  }
+
+  getGate(): number | null {
+    return this.gate;
+  }
+
+  setGate(time: number | null): void {
+    if (time === this.gate) return;
+    this.reanchor();
+    this.gate = time;
   }
 
   toClockTime(songTime: number): number {

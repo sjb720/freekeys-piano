@@ -84,3 +84,30 @@ describe('Transport', () => {
     expect(t.getState()).not.toBe(before);
   });
 });
+
+describe('Transport gate', () => {
+  it('holds at the gate and resumes continuously when released', () => {
+    time = 0;
+    const t = new Transport(clock, { duration: 10 });
+    t.setGate(2);
+    t.play();
+    time = 5;
+    expect(t.position()).toBe(2);
+    t.setGate(null);
+    expect(t.position()).toBe(2);
+    time = 6;
+    expect(t.position()).toBe(3);
+  });
+
+  it('moving the gate forward lets time catch up from the old gate', () => {
+    time = 0;
+    const t = new Transport(clock, { duration: 10 });
+    t.setGate(1);
+    t.play();
+    time = 3;
+    t.setGate(4);
+    expect(t.position()).toBe(1);
+    time = 4;
+    expect(t.position()).toBe(2);
+  });
+});

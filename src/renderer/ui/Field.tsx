@@ -6,15 +6,16 @@ export type FieldProps = {
   label: string;
   description?: string;
   value?: string;
-  children: ReactNode;
+  trailing?: ReactNode;
+  children?: ReactNode;
 };
 
-export function Field({ label, description, value, children }: FieldProps) {
+export function Field({ label, description, value, trailing, children }: FieldProps) {
   return (
     <Stack gap="xs">
-      <Stack direction="row" justify="between" align="center">
+      <Stack direction="row" justify="between" align="center" gap="md">
         <Text>{label}</Text>
-        {value !== undefined && <Text tone="muted">{value}</Text>}
+        {trailing ?? (value !== undefined && <Text tone="muted">{value}</Text>)}
       </Stack>
       {description && (
         <Text variant="caption" tone="muted">

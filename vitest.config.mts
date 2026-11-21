@@ -9,6 +9,6 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['src/**/*.test.ts', 'eslint-rules/**/*.test.mjs'],
+    include: ['src/**/*.test.ts', 'tests/**/*.test.ts', 'eslint-rules/**/*.test.mjs'],
   },
 });

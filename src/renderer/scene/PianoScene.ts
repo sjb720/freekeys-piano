@@ -19,12 +19,23 @@ export type ScrubHandlers = {
   onScrubEnd(): void;
 };
 
+export type KeyState = 'pressed' | 'correct' | 'wrong';
+
 export type PianoSceneOptions = {
   song: Song;
   position: () => number;
+  keyStates: () => ReadonlyMap<number, KeyState>;
+  markers: () => readonly number[];
+  onKey: (pitch: number, down: boolean) => void;
   palette: PixiPalette;
   fallTime: number;
   scrub: ScrubHandlers;
+};
+
+const KEY_STATE_TOKEN: Record<KeyState, ColorToken> = {
+  pressed: 'keyPressed',
+  correct: 'keyCorrect',
+  wrong: 'keyWrong',
 };
 
 const HIT_LINE = 3;
@@ -56,7 +67,7 @@ export class PianoScene {
     corner.destroy();
 
     this.highway = new NoteHighway(this.noteTexture);
-    this.keyboard = new PianoKeyboard(this.palette);
+    this.keyboard = new PianoKeyboard(this.palette, options.onKey);
     app.stage.addChild(this.highway, this.hitLine, this.keyboard);
 
     this.highway.eventMode = 'static';
@@ -113,7 +124,15 @@ export class PianoScene {
     if (width !== this.size.width || height !== this.size.height) this.relayout();
 
     const position = this.options.position();
-    this.highway.render(this.song, position, this.fallTime, this.keys, this.area, this.palette);
+    this.highway.render(
+      this.song,
+      position,
+      this.fallTime,
+      this.keys,
+      this.area,
+      this.palette,
+      this.options.markers(),
+    );
 
     this.active.clear();
     forEachNoteInWindow(this.song, position, position + 1e-3, (note) => {
@@ -121,6 +140,9 @@ export class PianoScene {
         this.active.set(note.pitch, note.hand === 'left' ? 'handLeft' : 'handRight');
       }
     });
+    for (const [pitch, state] of this.options.keyStates()) {
+      this.active.set(pitch, KEY_STATE_TOKEN[state]);
+    }
     this.keyboard.setActive(this.active);
   };
 

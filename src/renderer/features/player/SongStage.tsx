@@ -1,10 +1,19 @@
 import type { Application } from 'pixi.js';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Player } from '@renderer/engine';
+import { inputHub } from '@renderer/input';
 import { PianoScene } from '@renderer/scene';
 import { useSetting } from '@renderer/state/settingsStore';
 import { toPixiPalette, useActiveTheme } from '@renderer/themes';
 import { PixiStage } from '../stage';
+
+const TOUCH_VELOCITY = 0.8;
+
+const markersOf = (player: Player): number[] => {
+  const { loop, loopDraftStart } = player.getState();
+  if (loop) return [loop.start, loop.end];
+  return loopDraftStart === null ? [] : [loopDraftStart];
+};
 
 export function SongStage({ player }: { player: Player }) {
   const theme = useActiveTheme();
@@ -24,6 +33,15 @@ export function SongStage({ player }: { player: Player }) {
       const instance = new PianoScene(app, {
         song: player.song,
         position: player.position,
+        keyStates: () => player.keyFeedback(),
+        markers: () => markersOf(player),
+        onKey: (pitch, down) =>
+          inputHub.emit({
+            type: down ? 'on' : 'off',
+            pitch,
+            velocity: TOUCH_VELOCITY,
+            source: 'touch',
+          }),
         ...latest.current,
         scrub: {
           onScrubStart: () => player.beginScrub(),

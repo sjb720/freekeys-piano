@@ -10,6 +10,10 @@ export type Note = {
   track: number;
 };
 
+export type Timed = { start: number };
+
+export type Beat = { start: number; downbeat: boolean };
+
 export type TempoEvent = { time: number; bpm: number };
 export type TimeSignatureEvent = { time: number; numerator: number; denominator: number };
 
@@ -20,6 +24,7 @@ export type Song = {
   tempos: TempoEvent[];
   timeSignatures: TimeSignatureEvent[];
   measures: number[];
+  beats: Beat[];
   pitchRange: { min: number; max: number };
   maxNoteDuration: number;
 };

@@ -23,3 +23,8 @@
 | Lint rules            | `eslint-rules/`                  | `reference/lint.md`     |
 
 Reference files are created alongside their module.
+
+## Tests
+
+- Unit tests live next to their modules (`*.test.ts`).
+- `tests/` holds Node-only tests. `tests/fixtures.test.ts` parses every MIDI in `fixtures/local/` (gitignored). Drop real-world files there for local regression checks.

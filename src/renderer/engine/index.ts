@@ -1,6 +1,8 @@
 export { audioClock, type Clock } from './clock';
-export { LEAD_IN, Player } from './Player';
-export { LOOKAHEAD, Scheduler, type NoteSink } from './Scheduler';
+export { EventScheduler, LOOKAHEAD } from './EventScheduler';
+export { loopFrom, loopStartAt, type LoopRegion } from './loop';
+export { LEAD_IN, Player, type NoteSink, type PlayerAudio, type PlayerState } from './Player';
+export * from './practice';
 export {
   MAX_RATE,
   MIN_RATE,

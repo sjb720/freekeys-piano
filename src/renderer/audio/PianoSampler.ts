@@ -29,22 +29,28 @@ export class PianoSampler {
   }
 
   play(pitch: number, velocity: number, when: number, duration: number): void {
+    const voice = this.start(pitch, velocity, when);
+    if (voice) this.release(voice, when + Math.max(duration, 0.05));
+  }
+
+  noteOn(pitch: number, velocity: number): (() => void) | null {
+    const voice = this.start(pitch, velocity, this.ctx.currentTime);
+    return voice ? () => this.release(voice, this.ctx.currentTime) : null;
+  }
+
+  private start(pitch: number, velocity: number, when: number): Voice | null {
     const sample = nearestSample(pitch);
     const buffer = this.buffers.get(sample);
-    if (!buffer) return;
+    if (!buffer) return null;
 
     const source = this.ctx.createBufferSource();
     source.buffer = buffer;
     source.playbackRate.value = playbackRateFor(pitch, sample);
 
     const gain = this.ctx.createGain();
-    const end = when + Math.max(duration, 0.05);
     gain.gain.setValueAtTime(velocity ** 1.5, when);
-    gain.gain.setTargetAtTime(0, end, RELEASE);
-
     source.connect(gain).connect(this.output);
     source.start(when);
-    source.stop(end + RELEASE * 6);
 
     const voice = { source, gain };
     this.voices.add(voice);
@@ -52,6 +58,12 @@ export class PianoSampler {
       gain.disconnect();
       this.voices.delete(voice);
     };
+    return voice;
+  }
+
+  private release({ source, gain }: Voice, at: number): void {
+    gain.gain.setTargetAtTime(0, at, RELEASE);
+    source.stop(at + RELEASE * 6);
   }
 
   stopAll(): void {

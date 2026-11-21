@@ -19,22 +19,25 @@ Domain components composed from `ui/`.
 
 ## `player/`
 
-| Name                | Props / Signature               | Description                                                                                     |
-| ------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `PlayerView`        | `songId`                        | Loads the song and sampler, then renders the toolbar and stage. Shows loading and error states. |
-| `PlayerToolbar`     | `player`                        | Back, title, tempo slider, restart, play/pause, seek bar with times.                            |
-| `SongStage`         | `player`                        | `PixiStage` and `PianoScene`, kept in sync with the theme and the `noteFallTime` setting.       |
-| `usePlayerSession`  | `(songId) => PlayerSession`     | `loading` / `error` / `ready { player, song }`. Applies the `volume` setting.                   |
-| `useTransportState` | `(transport) => TransportState` |                                                                                                 |
-| `usePosition`       | `(player, fps=15) => number`    | Throttled position for UI text and sliders.                                                     |
-| `formatTime`        | `(seconds) => 'm:ss'`           | Negative values show as `0:00`.                                                                 |
+| Name                | Props / Signature                 | Description                                                                                                                                             |
+| ------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PlayerView`        | `songId`                          | Loads the song and sampler, then renders the toolbar and stage. Shows loading and error states.                                                         |
+| `PlayerToolbar`     | `player`                          | Row 1: back, title, MIDI status and stats, mode, metronome, restart, play/pause. Row 2: seek bar with times, loop button, tempo.                        |
+| `MidiStatus`        | —                                 | Connected MIDI device names, or "No MIDI keyboard".                                                                                                     |
+| `statsText`         | `(mode, stats) => string \| null` | Stats line for the toolbar (hidden in watch mode).                                                                                                      |
+| `usePlayerState`    | `(player) => PlayerState`         |                                                                                                                                                         |
+| `SongStage`         | `player`                          | `PixiStage` and `PianoScene`, kept in sync with the theme and the `noteFallTime` setting. Forwards on-screen key taps to `inputHub`.                    |
+| `usePlayerSession`  | `(songId) => PlayerSession`       | `loading` / `error` / `ready { player, song }`. Applies the `volume` and `metronome` settings, routes `inputHub` to the player, and sounds touch notes. |
+| `useTransportState` | `(transport) => TransportState`   |                                                                                                                                                         |
+| `usePosition`       | `(player, fps=15) => number`      | Throttled position for UI text and sliders.                                                                                                             |
+| `formatTime`        | `(seconds) => 'm:ss'`             | Negative values show as `0:00`.                                                                                                                         |
 
 ## `settings/`
 
-| Name           | Props        | Description                                   |
-| -------------- | ------------ | --------------------------------------------- |
-| `SettingsForm` | —            | Every registry setting, grouped by section.   |
-| `SettingField` | `settingKey` | Renders the control declared in the registry. |
+| Name           | Props        | Description                                                                                     |
+| -------------- | ------------ | ----------------------------------------------------------------------------------------------- |
+| `SettingsForm` | —            | Every registry setting, grouped by section.                                                     |
+| `SettingField` | `settingKey` | Renders the control declared in the registry: slider, toggle, segmented, theme, or MIDI device. |
 
 ## `library/`
 

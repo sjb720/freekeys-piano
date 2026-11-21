@@ -16,3 +16,24 @@ export function measureStartTicks(
   });
   return starts;
 }
+
+export type TickBeat = { ticks: number; downbeat: boolean };
+
+export function beatTicks(
+  signatures: TickTimeSignature[],
+  endTicks: number,
+  ppq: number,
+): TickBeat[] {
+  const sigs = [...signatures].sort((a, b) => a.ticks - b.ticks);
+  if (sigs[0]?.ticks !== 0) sigs.unshift({ ticks: 0, numerator: 4, denominator: 4 });
+
+  const beats: TickBeat[] = [];
+  sigs.forEach((sig, i) => {
+    const until = sigs[i + 1]?.ticks ?? endTicks;
+    const length = (ppq * 4) / sig.denominator;
+    for (let t = sig.ticks, n = 0; t < until; t += length, n++) {
+      beats.push({ ticks: t, downbeat: n % sig.numerator === 0 });
+    }
+  });
+  return beats;
+}

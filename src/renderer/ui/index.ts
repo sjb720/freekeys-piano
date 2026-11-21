@@ -11,4 +11,5 @@ export {
 export { Slider, type SliderProps } from './Slider';
 export { Stack, type StackProps } from './Stack';
 export { Text, type TextProps } from './Text';
+export { Toggle, type ToggleProps } from './Toggle';
 export type { ControlSize, Space, Variant } from './types';

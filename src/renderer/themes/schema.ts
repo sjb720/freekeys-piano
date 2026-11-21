@@ -25,6 +25,7 @@ export const COLOR_TOKENS = [
   'highwayBg',
   'highwayGrid',
   'hitLine',
+  'loopMarker',
 ] as const;
 
 export type ColorToken = (typeof COLOR_TOKENS)[number];
