@@ -1,8 +1,27 @@
-import { app, BrowserWindow, dialog } from 'electron';
+import { app, BrowserWindow, dialog, shell } from 'electron';
+import { mkdir } from 'node:fs/promises';
 import { handle } from './ipc';
 import type { History } from './history';
 import type { Library } from './library';
 import type { Profiles } from './profiles';
+
+async function showOpen(options: Electron.OpenDialogOptions): Promise<string[]> {
+  const win = BrowserWindow.getFocusedWindow();
+  const result = win
+    ? await dialog.showOpenDialog(win, options)
+    : await dialog.showOpenDialog(options);
+  return result.canceled ? [] : result.filePaths;
+}
+
+const pickImports = () =>
+  showOpen({
+    title: 'Add songs',
+    properties: ['openFile', 'multiSelections'],
+    filters: [
+      { name: 'MIDI', extensions: ['mid', 'midi'] },
+      { name: 'All files', extensions: ['*'] },
+    ],
+  });
 
 async function pick(kind: 'file' | 'folder'): Promise<string | null> {
   const options: Electron.OpenDialogOptions =
@@ -13,11 +32,7 @@ async function pick(kind: 'file' | 'folder'): Promise<string | null> {
           filters: [{ name: 'MIDI', extensions: ['mid', 'midi'] }],
         }
       : { title: 'Add library folder', properties: ['openDirectory'] };
-  const win = BrowserWindow.getFocusedWindow();
-  const result = win
-    ? await dialog.showOpenDialog(win, options)
-    : await dialog.showOpenDialog(options);
-  return result.canceled ? null : (result.filePaths[0] ?? null);
+  return (await showOpen(options))[0] ?? null;
 }
 
 export function registerHandlers(library: Library, profiles: Profiles, history: History): void {
@@ -27,6 +42,14 @@ export function registerHandlers(library: Library, profiles: Profiles, history: 
   handle('songs:pick', async () => {
     const path = await pick('file');
     return path ? library.importFile(path) : null;
+  });
+  handle('songs:import', async (paths) => {
+    const chosen = paths ?? (await pickImports());
+    return chosen.length ? library.importFiles(chosen) : null;
+  });
+  handle('songs:showImported', async () => {
+    await mkdir(library.importDir, { recursive: true });
+    await shell.openPath(library.importDir);
   });
   handle('songs:load', (id) => library.load(id));
   handle('songs:setFavorite', (id, favorite) => library.setFavorite(id, favorite));

@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron';
 import type { Api, IpcArgs, IpcChannel, IpcEvent, IpcEvents, IpcResult } from '@shared/ipc';
 
 function invoke<C extends IpcChannel>(channel: C, ...args: IpcArgs<C>): Promise<IpcResult<C>> {
@@ -19,6 +19,10 @@ const api: Api = {
     list: () => invoke('songs:list'),
     get: (id) => invoke('songs:get', id),
     pick: () => invoke('songs:pick'),
+    import: () => invoke('songs:import', null),
+    importFiles: (files) =>
+      invoke('songs:import', files.map((f) => webUtils.getPathForFile(f)).filter(Boolean)),
+    showImported: () => invoke('songs:showImported'),
     load: (id) => invoke('songs:load', id),
     setFavorite: (id, favorite) => invoke('songs:setFavorite', id, favorite),
     setHands: (id, hands) => invoke('songs:setHands', id, hands),

@@ -1,10 +1,20 @@
 import { Midi } from '@tonejs/midi';
 import { handsByTrack, type TrackSummary } from './hands';
 import { beatTicks, measureStartTicks } from './measures';
+import { decodeMidiText, isPlaceholderTitle } from './midiText';
+import { firstTrackHasNotes, midiFormat, midiTrackCount } from './rawMidi';
 import { separateHands } from './separateHands';
-import type { Note, Song } from './types';
+import type { Note, Song, SongTrack } from './types';
 
 const PERCUSSION_CHANNEL = 9;
+
+// In format 1 the first track should be a conductor; a name on a track with notes names that track.
+function embeddedTitle(midi: Midi, bytes: Uint8Array): string {
+  const title = decodeMidiText(midi.name);
+  const namesTrack =
+    midiFormat(bytes) === 1 && midiTrackCount(bytes) > 1 && firstTrackHasNotes(bytes);
+  return namesTrack || isPlaceholderTitle(title) ? '' : title;
+}
 
 export function parseMidi(bytes: Uint8Array, fallbackTitle: string): Song {
   const midi = new Midi(bytes);
@@ -14,10 +24,22 @@ export function parseMidi(bytes: Uint8Array, fallbackTitle: string): Song {
     .map((track, index) => ({ track, index }))
     .filter(({ track }) => track.notes.length > 0 && track.channel !== PERCUSSION_CHANNEL);
 
-  const summaries: TrackSummary[] = tracks.map(({ track, index }) => ({
-    index,
-    name: track.name,
-    meanPitch: track.notes.reduce((sum, n) => sum + n.midi, 0) / track.notes.length,
+  const songTracks: SongTrack[] = tracks.map(({ track, index }) => {
+    const pitches = track.notes.map((n) => n.midi);
+    return {
+      index,
+      name: decodeMidiText(track.name),
+      instrument: track.instrument.name,
+      noteCount: pitches.length,
+      minPitch: Math.min(...pitches),
+      maxPitch: Math.max(...pitches),
+    };
+  });
+
+  const summaries: TrackSummary[] = songTracks.map((t, i) => ({
+    index: t.index,
+    name: t.name,
+    meanPitch: tracks[i]!.track.notes.reduce((sum, n) => sum + n.midi, 0) / t.noteCount,
   }));
   const trackHands = handsByTrack(summaries);
 
@@ -57,7 +79,8 @@ export function parseMidi(bytes: Uint8Array, fallbackTitle: string): Song {
   const pitches = notes.map((n) => n.pitch);
 
   return {
-    title: midi.name.trim() || fallbackTitle,
+    title: embeddedTitle(midi, bytes) || fallbackTitle,
+    tracks: songTracks,
     duration: notes.reduce((end, n) => Math.max(end, n.start + n.duration), 0),
     notes,
     tempos: header.tempos.map((t) => ({ time: header.ticksToSeconds(t.ticks), bpm: t.bpm })),

@@ -15,7 +15,10 @@ export type FileRow = {
 
 export type FileInfo = Omit<FileRow, 'songId'>;
 
-const SOURCE_RANK: Record<SongSource, number> = { bundled: 0, library: 1, file: 2 };
+const SOURCE_RANK: Record<SongSource, number> = { bundled: 0, library: 1, imported: 2, file: 3 };
+const SOURCE_ORDER = `case source ${Object.entries(SOURCE_RANK)
+  .map(([source, rank]) => `when '${source}' then ${rank}`)
+  .join(' ')} end`;
 
 type SongRow = {
   id: string;
@@ -36,7 +39,7 @@ const SONG_SELECT = `
   from songs s
   join files f on f.path = (
     select path from files where song_id = s.id
-    order by case source when 'bundled' then 0 when 'library' then 1 else 2 end, path limit 1
+    order by ${SOURCE_ORDER}, path limit 1
   )`;
 
 function toRef(row: SongRow): SongRef {
@@ -162,10 +165,16 @@ export class LibraryDb {
     const row = this.db
       .prepare(
         `select path from files where song_id = ?
-         order by case source when 'bundled' then 0 when 'library' then 1 else 2 end, path limit 1`,
+         order by ${SOURCE_ORDER}, path limit 1`,
       )
       .get(id) as { path: string } | undefined;
     return row?.path ?? null;
+  }
+
+  inLibrary(id: string): boolean {
+    return !!this.db
+      .prepare("select 1 from files where song_id = ? and source != 'file' limit 1")
+      .get(id);
   }
 
   staleSongs(): { id: string; path: string }[] {

@@ -63,6 +63,66 @@ describe('parseMidi', () => {
     expect(parseMidi(bytes, 'x').handSource).toBe('heuristic');
   });
 
+  it('uses the embedded title and decodes UTF-8 text', () => {
+    const named = (name: string) =>
+      buildMidi((m) => {
+        m.name = name;
+        m.addTrack().addNote({ midi: 60, time: 0, duration: 1 });
+      });
+    expect(parseMidi(named('Für Elise'), 'x').title).toBe('Für Elise');
+    const utf8 = String.fromCharCode(...new TextEncoder().encode('월광 소나타\0'));
+    expect(parseMidi(named(utf8), 'x').title).toBe('월광 소나타');
+  });
+
+  it('falls back to the filename for placeholder titles', () => {
+    for (const name of ['control track', 'Track 1', 'Untitled', '  ', 'Sequence-2']) {
+      const bytes = buildMidi((m) => {
+        m.name = name;
+        m.addTrack().addNote({ midi: 60, time: 0, duration: 1 });
+      });
+      expect(parseMidi(bytes, 'Fallback').title).toBe('Fallback');
+    }
+  });
+
+  it('treats a format 1 name on a track with notes as a track name, not a title', () => {
+    const hex = (text: string) => text.split(' ').map((h) => parseInt(h, 16));
+    const chunk = (id: string, body: number[]) => [
+      ...Array.from(id, (c) => c.charCodeAt(0)),
+      ...[24, 16, 8, 0].map((shift) => (body.length >> shift) & 0xff),
+      ...body,
+    ];
+    const end = hex('00 ff 2f 00');
+    // Track 1: named "Flute", plays C5. Track 2: unnamed, plays C3.
+    const bytes = Uint8Array.from([
+      ...chunk('MThd', hex('00 01 00 02 01 e0')),
+      ...chunk('MTrk', [...hex('00 ff 03 05 46 6c 75 74 65 00 90 48 40 83 60 80 48 00'), ...end]),
+      ...chunk('MTrk', [...hex('00 91 30 40 83 60 81 30 00'), ...end]),
+    ]);
+    const song = parseMidi(bytes, 'Fallback');
+    expect(song.title).toBe('Fallback');
+    expect(song.tracks.map((t) => t.name)).toEqual(['Flute', '']);
+  });
+
+  it('summarizes each note track', () => {
+    const bytes = buildMidi((m) => {
+      const t = m.addTrack();
+      t.name = 'Right Hand';
+      t.addNote({ midi: 67, time: 0, duration: 1 });
+      t.addNote({ midi: 72, time: 1, duration: 1 });
+      m.addTrack();
+    });
+    expect(parseMidi(bytes, 'x').tracks).toEqual([
+      {
+        index: 0,
+        name: 'Right Hand',
+        instrument: 'acoustic grand piano',
+        noteCount: 2,
+        minPitch: 67,
+        maxPitch: 72,
+      },
+    ]);
+  });
+
   it('sorts notes, assigns ids, and computes metadata', () => {
     const bytes = buildMidi((m) => {
       const t = m.addTrack();

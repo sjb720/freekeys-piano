@@ -1,0 +1,22 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  padding: var(--space-lg);
+  background: var(--color-overlay);
+  pointer-events: none;
+}
+
+.target {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-md);
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius-lg);
+  color: var(--color-text);
+  background: var(--color-surface);
+}

@@ -20,8 +20,18 @@ export type Beat = { start: number; downbeat: boolean };
 export type TempoEvent = { time: number; bpm: number };
 export type TimeSignatureEvent = { time: number; numerator: number; denominator: number };
 
+export type SongTrack = {
+  index: number;
+  name: string;
+  instrument: string;
+  noteCount: number;
+  minPitch: number;
+  maxPitch: number;
+};
+
 export type Song = {
   title: string;
+  tracks: SongTrack[];
   duration: number;
   notes: Note[];
   tempos: TempoEvent[];

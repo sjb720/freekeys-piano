@@ -1,4 +1,12 @@
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -32,6 +40,7 @@ describe('Library', () => {
       db,
       profile: profiles.activeIdOrNull,
       bundledDir: join(dir, 'bundled'),
+      importDir: join(dir, 'imported'),
       runner: (paths, overrides, onResult) => {
         runs += paths.length;
         return inline(paths, overrides, onResult);
@@ -118,5 +127,42 @@ describe('Library', () => {
     const ref = await library.importFile(path);
     expect(ref?.source).toBe('file');
     expect((await library.load(ref!.id))?.bytes.length).toBeGreaterThan(0);
+  });
+
+  it('copies imported files in, naming extensionless ones .mid', async () => {
+    const original = join(dir, 'music', 'Nocturne Op. 9 no. 2');
+    copyFileSync(join(demos, 'ode-to-joy.mid'), original);
+    const result = await library.importFiles([original]);
+    expect(result.skipped).toEqual([]);
+    expect(result.added.map((s) => s.source)).toEqual(['imported']);
+    expect(readdirSync(join(dir, 'imported'))).toEqual(['Nocturne Op. 9 no. 2.mid']);
+    rmSync(original);
+    await library.scanner.scan();
+    expect(library.list().filter((s) => s.source === 'imported')).toHaveLength(1);
+  });
+
+  it('skips non-MIDI files and songs already in the library', async () => {
+    writeFileSync(join(dir, 'music', 'notes.mid'), 'not midi');
+    await library.scanner.scan();
+    const result = await library.importFiles([
+      join(dir, 'music', 'notes.mid'),
+      join(dir, 'bundled', 'scale.mid'),
+      join(dir, 'missing.mid'),
+    ]);
+    expect(result.added).toEqual([]);
+    expect(result.skipped.map((s) => s.reason)).toEqual([
+      'Not a MIDI file.',
+      'Already in your library.',
+      'Could not read the file.',
+    ]);
+  });
+
+  it('gives different songs with the same name unique filenames', async () => {
+    mkdirSync(join(dir, 'a'));
+    mkdirSync(join(dir, 'b'));
+    copyFileSync(join(demos, 'ode-to-joy.mid'), join(dir, 'a', 'song.mid'));
+    copyFileSync(join(demos, 'twinkle-twinkle.mid'), join(dir, 'b', 'song.MID'));
+    await library.importFiles([join(dir, 'a', 'song.mid'), join(dir, 'b', 'song.MID')]);
+    expect(readdirSync(join(dir, 'imported')).sort()).toEqual(['song (2).mid', 'song.mid']);
   });
 });

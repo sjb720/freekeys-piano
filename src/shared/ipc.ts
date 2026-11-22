@@ -9,7 +9,7 @@ export type AppInfo = {
   platform: string;
 };
 
-export type SongSource = 'bundled' | 'library' | 'file';
+export type SongSource = 'bundled' | 'library' | 'imported' | 'file';
 
 export type SongRef = SongSummary & {
   id: string;
@@ -22,6 +22,11 @@ export type SongRef = SongSummary & {
 export type SongFile = {
   ref: SongRef;
   bytes: Uint8Array;
+};
+
+export type ImportResult = {
+  added: SongRef[];
+  skipped: { name: string; reason: string }[];
 };
 
 export type ScanStatus = {
@@ -37,6 +42,8 @@ export interface IpcContract {
   'songs:list': { args: []; result: SongRef[] };
   'songs:get': { args: [id: string]; result: SongRef | null };
   'songs:pick': { args: []; result: SongRef | null };
+  'songs:import': { args: [paths: string[] | null]; result: ImportResult | null };
+  'songs:showImported': { args: []; result: void };
   'songs:load': { args: [id: string]; result: SongFile | null };
   'songs:setFavorite': { args: [id: string, favorite: boolean]; result: void };
   'songs:setHands': { args: [id: string, hands: HandOverride]; result: SongRef | null };
@@ -75,6 +82,9 @@ export interface Api {
     list(): Promise<SongRef[]>;
     get(id: string): Promise<SongRef | null>;
     pick(): Promise<SongRef | null>;
+    import(): Promise<ImportResult | null>;
+    importFiles(files: File[]): Promise<ImportResult | null>;
+    showImported(): Promise<void>;
     load(id: string): Promise<SongFile | null>;
     setFavorite(id: string, favorite: boolean): Promise<void>;
     setHands(id: string, hands: HandOverride): Promise<SongRef | null>;

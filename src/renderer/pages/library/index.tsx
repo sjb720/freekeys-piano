@@ -40,7 +40,7 @@ export default function LibraryPage() {
             No songs yet
           </Text>
           <Text tone="muted" align="center">
-            Add a folder of MIDI files in Settings to fill your library.
+            Add MIDI files or a folder of them in Settings, or drag files onto this window.
           </Text>
           <Button variant="primary" onClick={() => navigate.to('/settings/songs')}>
             Add songs

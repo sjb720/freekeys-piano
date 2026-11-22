@@ -23,6 +23,7 @@ app.whenReady().then(() => {
     db,
     profile: profiles.activeIdOrNull,
     bundledDir: join(resourcesDir(), 'songs'),
+    importDir: join(app.getPath('userData'), 'Imported songs'),
     runner: runInUtilityProcess,
     onStatus: (status) => broadcast('library:status', status),
   });

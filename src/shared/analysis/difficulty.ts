@@ -1,7 +1,7 @@
 import type { Song } from '../song';
 import { handFeatures, handIndependence, type HandFeatures } from './features';
 
-export const ANALYSIS_VERSION = 1;
+export const ANALYSIS_VERSION = 2;
 
 type FeatureKey = Exclude<keyof HandFeatures, 'noteCount'>;
 

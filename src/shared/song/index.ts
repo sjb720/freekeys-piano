@@ -1,6 +1,7 @@
-export { AUTO_HANDS, resolveHand, type HandOverride } from './handOverride';
+export { AUTO_HANDS, handsByMajority, resolveHand, type HandOverride } from './handOverride';
 export { handBySplit, handsByTrack, SPLIT_PITCH, type TrackSummary } from './hands';
 export { beatTicks, measureStartTicks, type TickBeat, type TickTimeSignature } from './measures';
+export { decodeMidiText, isPlaceholderTitle } from './midiText';
 export { noteName, pitchClassName } from './noteName';
 export { parseMidi } from './parseMidi';
 export { MAX_NOTES, MAX_SPAN, separateHands, SLICE_WINDOW, type HandNote } from './separateHands';
@@ -11,6 +12,7 @@ export type {
   HandSource,
   Note,
   Song,
+  SongTrack,
   TempoEvent,
   TimeSignatureEvent,
   Timed,

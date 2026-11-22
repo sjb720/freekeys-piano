@@ -14,5 +14,6 @@ export const factorText = (factor: DifficultyFactor) =>
 export const SOURCE_LABEL: Record<SongSource, string> = {
   bundled: 'Demo',
   library: 'Library',
+  imported: 'Added',
   file: 'Opened file',
 };
