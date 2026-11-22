@@ -58,6 +58,8 @@ Get the latest build from [Releases](https://github.com/sjb720/freekeys-piano/re
 
 `SHA256SUMS.txt` lists checksums for every file.
 
+FreeKeys opens fullscreen. Press F11 (Ctrl+Cmd+F on macOS) to switch to a window and back.
+
 ## Using your own songs
 
 FreeKeys reads standard MIDI files (`.mid`, `.midi`). Files with separate tracks for each hand work best, but single-track files work too.

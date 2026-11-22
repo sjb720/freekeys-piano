@@ -8,6 +8,8 @@ export function createMainWindow(): BrowserWindow {
     height: 800,
     minWidth: 800,
     minHeight: 500,
+    // F11 (Ctrl+Cmd+F on macOS) leaves fullscreen through the default menu.
+    fullscreen: true,
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
