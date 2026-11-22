@@ -98,6 +98,15 @@ describe('Player', () => {
     player.destroy();
   });
 
+  it('moves forward when seeking past the wait gate', () => {
+    const player = create('wait');
+    expect(player.transport.getGate()).toBe(0);
+    player.scrubTo(2.5);
+    expect(player.position()).toBe(2.5);
+    expect(player.transport.getGate()).toBe(3);
+    player.destroy();
+  });
+
   it('plays every note in watch mode', () => {
     const player = create('watch');
     player.transport.play();

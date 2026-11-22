@@ -77,6 +77,8 @@ export class Transport {
   }
 
   seek(time: number): void {
+    // A gate belongs to the old position; listeners set a new one on 'seek'.
+    this.gate = null;
     this.anchorPosition = Math.min(Math.max(time, this.state.start), this.state.duration);
     this.anchorTime = this.clock.now();
     this.emit('seek');
