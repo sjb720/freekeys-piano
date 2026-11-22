@@ -1,4 +1,4 @@
-# Piano Teacher — Plan
+# FreeKeys — Plan
 
 Open-source, offline piano practice app. Falling notes onto a piano, driven by a plugged-in MIDI keyboard (or a mic), running on a touch monitor sitting on the keyboard's music stand.
 

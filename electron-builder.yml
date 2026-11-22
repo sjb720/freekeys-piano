@@ -1,5 +1,5 @@
-appId: org.ospianoteacher.app
-productName: Piano Teacher
+appId: org.freekeys.app
+productName: FreeKeys
 directories:
   output: release
   buildResources: build

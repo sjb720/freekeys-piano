@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Open-source Electron piano teacher. Read `docs/PLAN.md` for architecture and milestones, and `docs/README.md` for the module map.
+FreeKeys: an open-source Electron piano teacher. Read `docs/PLAN.md` for architecture and milestones, and `docs/README.md` for the module map.
 
 ## Rules
 

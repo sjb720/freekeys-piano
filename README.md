@@ -1,8 +1,8 @@
-# Piano Teacher
+# FreeKeys
 
 Open-source, offline piano practice app for Linux and Windows. Falling notes onto a piano, wait mode, left/right hand practice, MIDI keyboard and mic input, difficulty-ranked library, profiles, and swappable themes.
 
-Status: early development (M0 scaffold). See [docs/PLAN.md](docs/PLAN.md).
+Status: early development. Milestones M0–M4 are done and M5 (profiles) is in progress. See [docs/PLAN.md](docs/PLAN.md).
 
 ## Develop
 

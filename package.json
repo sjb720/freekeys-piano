@@ -1,6 +1,6 @@
 {
-  "name": "os-piano-teacher",
-  "productName": "Piano Teacher",
+  "name": "freekeys",
+  "productName": "FreeKeys",
   "version": "0.1.0",
   "description": "Open-source piano practice app: falling notes, wait mode, MIDI and mic input.",
   "license": "MIT",

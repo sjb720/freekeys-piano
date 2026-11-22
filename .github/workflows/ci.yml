@@ -42,7 +42,7 @@ jobs:
       - run: pnpm package:${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
-          name: piano-teacher-${{ matrix.target }}
+          name: freekeys-${{ matrix.target }}
           path: |
             release/*.AppImage
             release/*.deb
