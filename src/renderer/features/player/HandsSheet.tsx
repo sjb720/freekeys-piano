@@ -5,6 +5,7 @@ import {
   type HandOverride,
   type SongTrack,
 } from '@shared/song';
+import { useState } from 'react';
 import type { Player } from '@renderer/engine';
 import { Field, SegmentedControl, Sheet, Slider, Stack, Text } from '@renderer/ui';
 import { usePlayerState } from './hooks';
@@ -50,6 +51,8 @@ export type HandsSheetProps = {
 
 export function HandsSheet({ player, songId, open, onClose }: HandsSheetProps) {
   const { hands } = usePlayerState(player);
+  const [draftPitch, setDraftPitch] = useState<number | null>(null);
+  const splitPitch = hands.kind === 'split' ? (draftPitch ?? hands.pitch) : 60;
   const { song } = player;
   const { min, max } = song.pitchRange;
   const kinds =
@@ -81,14 +84,18 @@ export function HandsSheet({ player, songId, open, onClose }: HandsSheetProps) {
         <Field
           label="Split point"
           description="Notes at or above this key go to the right hand."
-          value={noteName(hands.pitch)}
+          value={noteName(splitPitch)}
         >
           <Slider
             label="Split point"
-            value={hands.pitch}
+            value={splitPitch}
             min={min}
             max={max + 1}
-            onChange={(pitch) => apply({ kind: 'split', pitch })}
+            onChange={setDraftPitch}
+            onCommit={(pitch) => {
+              setDraftPitch(null);
+              apply({ kind: 'split', pitch });
+            }}
           />
         </Field>
       )}

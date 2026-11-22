@@ -189,6 +189,19 @@ describe('Library', () => {
     expect(runs).toBe(0);
   });
 
+  it('clears the scanning flag when the analyzer fails mid-scan', async () => {
+    const failing = new Library({
+      db,
+      profile: profiles.activeIdOrNull,
+      bundledDir: join(dir, 'bundled'),
+      importDir: join(dir, 'imported'),
+      runner: () => Promise.reject(new Error('worker crashed')),
+      onStatus: () => {},
+    });
+    await expect(failing.scanner.scan()).rejects.toThrow('worker crashed');
+    expect(failing.scanner.getStatus().scanning).toBe(false);
+  });
+
   it('removes copies and reports them when the analyzer fails', async () => {
     const failing = new Library({
       db,

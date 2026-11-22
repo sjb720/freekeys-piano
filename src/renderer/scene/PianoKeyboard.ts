@@ -77,16 +77,23 @@ export class PianoKeyboard extends Container {
   private onPointerDown = (event: FederatedPointerEvent): void => {
     const pitch = this.pitchOf.get(event.target as Container);
     if (pitch === undefined) return;
+    const held = this.isHeld(pitch);
     this.pointers.set(event.pointerId, pitch);
-    this.onKey(pitch, true);
+    if (!held) this.onKey(pitch, true);
   };
 
   private onPointerUp = (event: FederatedPointerEvent): void => {
     const pitch = this.pointers.get(event.pointerId);
     if (pitch === undefined) return;
     this.pointers.delete(event.pointerId);
-    this.onKey(pitch, false);
+    // Another finger still on the same key keeps it down.
+    if (!this.isHeld(pitch)) this.onKey(pitch, false);
   };
+
+  private isHeld(pitch: number): boolean {
+    for (const held of this.pointers.values()) if (held === pitch) return true;
+    return false;
+  }
 
   private buildLabels(): void {
     for (const child of this.labels.removeChildren()) child.destroy();

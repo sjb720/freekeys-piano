@@ -15,6 +15,8 @@ export type SheetProps = {
 
 export function Sheet({ title, open, onClose, children }: SheetProps) {
   const panel = useRef<HTMLDivElement>(null);
+  // A drag that starts inside the panel and ends on the backdrop clicks the backdrop; ignore it.
+  const pressedBackdrop = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -27,7 +29,14 @@ export function Sheet({ title, open, onClose, children }: SheetProps) {
   if (!open) return null;
 
   return createPortal(
-    <div className={styles.backdrop} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+      className={styles.backdrop}
+      onPointerDown={(e) => (pressedBackdrop.current = e.target === e.currentTarget)}
+      onClick={(e) => {
+        if (pressedBackdrop.current && e.target === e.currentTarget) onClose();
+        pressedBackdrop.current = false;
+      }}
+    >
       <div
         ref={panel}
         role="dialog"

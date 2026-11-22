@@ -198,6 +198,20 @@ describe('Player', () => {
     player.destroy();
   });
 
+  it('repeats a loop over the last measure instead of ending', () => {
+    const player = create('watch');
+    player.scrubTo(2.5);
+    player.cycleLoop();
+    player.cycleLoop();
+    expect(player.getState().loop).toEqual({ start: 2, end: 4 });
+    player.transport.play();
+    run(3);
+    expect(player.transport.getState().playing).toBe(true);
+    expect(player.position()).toBeGreaterThanOrEqual(2);
+    expect(player.position()).toBeLessThan(4);
+    player.destroy();
+  });
+
   it('resets stats when the mode changes', () => {
     const player = create('playAlong');
     player.handleInput({ type: 'on', pitch: 50, velocity: 1, source: 'touch' });

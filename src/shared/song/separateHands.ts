@@ -62,7 +62,8 @@ export function separateHands(notes: readonly HandNote[]): Hand[] {
     );
     const pitches = order.map((k) => notes[k]!.pitch);
 
-    let bestSplit = 0;
+    // Chords too big for any split keep the middle split rather than all going right.
+    let bestSplit = Math.floor(pitches.length / 2);
     let bestCost = Infinity;
     for (let s = 0; s <= pitches.length; s++) {
       const cost = splitCost(pitches.slice(0, s), pitches.slice(s), left, right);

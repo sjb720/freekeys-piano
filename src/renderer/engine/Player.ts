@@ -208,12 +208,14 @@ export class Player {
   }
 
   private tick = (): void => {
-    this.transport.tick();
-    this.trackTime();
+    // Wrap before the transport ends, or a loop over the last measure stops instead of repeating.
     const { loop } = this.state;
-    if (loop && this.transport.getState().playing && this.position() >= loop.end) {
+    const playing = this.transport.getState().playing;
+    if (loop && playing && this.position() >= Math.min(loop.end, this.song.duration)) {
       this.transport.seek(loop.start);
     }
+    this.transport.tick();
+    this.trackTime();
     this.practice.update();
     this.notes.update();
     this.beats.update();

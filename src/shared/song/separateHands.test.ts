@@ -5,6 +5,13 @@ const n = (pitch: number, start: number, duration = 0.2): HandNote => ({ pitch, 
 const sorted = (notes: HandNote[]) => [...notes].sort((a, b) => a.start - b.start);
 
 describe('separateHands', () => {
+  it('splits a chord too big for two hands down the middle', () => {
+    const cluster = [36, 40, 43, 48, 52, 55, 60, 64, 67, 72, 76, 79].map((p) => n(p, 0));
+    const hands = separateHands(cluster);
+    expect(hands.slice(0, 6).every((h) => h === 'left')).toBe(true);
+    expect(hands.slice(6).every((h) => h === 'right')).toBe(true);
+  });
+
   it('splits a two-hand chord between the hands', () => {
     expect(separateHands([n(48, 0), n(55, 0), n(64, 0), n(67, 0), n(72, 0)])).toEqual([
       'left',

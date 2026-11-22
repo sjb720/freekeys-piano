@@ -12,10 +12,8 @@ export class PlayAlongGrader {
 
   reset(position: number): void {
     this.missCursor = lowerBound(this.notes, position);
-    for (const id of [...this.matched]) {
-      const note = this.notes.find((n) => n.id === id);
-      if (note && note.start >= position) this.matched.delete(id);
-    }
+    for (let i = this.missCursor; i < this.notes.length; i++)
+      this.matched.delete(this.notes[i]!.id);
   }
 
   onNoteOn(pitch: number, position: number, rate: number): GradeResult {

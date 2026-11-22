@@ -69,6 +69,14 @@ export class Scanner {
 
   private async scanOnce(): Promise<void> {
     this.update({ scanning: true, done: 0, total: 0, failed: 0 });
+    try {
+      await this.scanFiles();
+    } finally {
+      this.update({ scanning: false });
+    }
+  }
+
+  private async scanFiles(): Promise<void> {
     const known = new Map(this.db.files().map((f) => [f.path, f]));
     const pending = new Map<string, FileInfo>();
     const removed: string[] = [];
@@ -127,7 +135,6 @@ export class Scanner {
       });
       if (batch.length) flush();
     }
-    this.update({ scanning: false });
   }
 
   private update(patch: Partial<ScanStatus>): void {
