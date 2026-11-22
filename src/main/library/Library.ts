@@ -1,9 +1,9 @@
-import { mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import type { ImportResult, ScanStatus, SongFile, SongRef } from '@shared/ipc';
 import type { HandOverride } from '@shared/song';
-import { analyzeFile, songIdFor } from './analyzeFile';
+import { analyzeFile, songIdFor, type AnalyzeResult } from './analyzeFile';
 import { LibraryDb } from './LibraryDb';
 import { Scanner, type AnalyzeRunner } from './Scanner';
 
@@ -16,8 +16,24 @@ export type LibraryOptions = {
   onStatus: (status: ScanStatus) => void;
 };
 
-const isMidi = (bytes: Uint8Array) =>
-  bytes.length > 14 && String.fromCharCode(...bytes.subarray(0, 4)) === 'MThd';
+const HEADER_BYTES = 14;
+
+const isMidi = (header: Uint8Array) =>
+  header.length === HEADER_BYTES && String.fromCharCode(...header.subarray(0, 4)) === 'MThd';
+
+// Reads only the header so a large non-MIDI file is rejected without loading it.
+async function readHeader(path: string): Promise<Uint8Array | null> {
+  const file = await open(path, 'r').catch(() => null);
+  if (!file) return null;
+  try {
+    const { bytesRead, buffer } = await file.read(new Uint8Array(HEADER_BYTES), 0, HEADER_BYTES, 0);
+    return buffer.subarray(0, bytesRead);
+  } catch {
+    return null;
+  } finally {
+    await file.close();
+  }
+}
 
 // Only strip a real MIDI extension: "Nocturne Op. 9 no. 2" has no extension to remove.
 const importStem = (name: string) => name.replace(/\.midi?$/i, '').trim() || 'Song';
@@ -28,10 +44,12 @@ export class Library {
   readonly importDir: string;
 
   private readonly profile: () => string | null;
+  private readonly runner: AnalyzeRunner;
 
   constructor({ db, profile, bundledDir, importDir, runner, onStatus }: LibraryOptions) {
     this.db = new LibraryDb(db);
     this.profile = profile;
+    this.runner = runner;
     this.importDir = importDir;
     this.scanner = new Scanner(
       this.db,
@@ -78,39 +96,62 @@ export class Library {
 
   async importFiles(paths: string[]): Promise<ImportResult> {
     const result: ImportResult = { added: [], skipped: [] };
+    const names = new Map<string, string>();
+    const ids = new Set<string>();
     await mkdir(this.importDir, { recursive: true });
+
     for (const source of paths) {
       const name = basename(source);
       const skip = (reason: string) => result.skipped.push({ name, reason });
+      const header = await readHeader(source);
+      if (!header) {
+        skip('Could not read the file.');
+        continue;
+      }
+      if (!isMidi(header)) {
+        skip('Not a MIDI file.');
+        continue;
+      }
       const bytes = await readFile(source).catch(() => null);
       if (!bytes) {
         skip('Could not read the file.');
         continue;
       }
-      if (!isMidi(bytes)) {
-        skip('Not a MIDI file.');
-        continue;
-      }
-      if (this.db.inLibrary(songIdFor(bytes))) {
+      const id = songIdFor(bytes);
+      if (ids.has(id) || this.db.inLibrary(id)) {
         skip('Already in your library.');
         continue;
       }
-      const target = await this.writeImport(importStem(name), bytes);
-      const analyzed = analyzeFile(target, this.db.overrides());
-      if ('error' in analyzed) {
+      ids.add(id);
+      names.set(await this.writeImport(importStem(name), bytes), name);
+    }
+
+    const analyzed = new Map<string, AnalyzeResult>();
+    if (names.size) {
+      await this.runner([...names.keys()], this.db.overrides(), (r) =>
+        analyzed.set(r.path, r),
+      ).catch(() => {});
+    }
+
+    for (const [target, name] of names) {
+      const outcome = analyzed.get(target);
+      if (!outcome || 'error' in outcome) {
         await unlink(target).catch(() => {});
-        skip(`Could not read the notes: ${analyzed.error}`);
+        const reason = outcome
+          ? `Could not read the notes: ${outcome.error}`
+          : 'Could not analyze the file.';
+        result.skipped.push({ name, reason });
         continue;
       }
       const info = await stat(target);
       this.db.transaction(() => {
-        this.db.putSong(analyzed.id, analyzed.summary);
+        this.db.putSong(outcome.id, outcome.summary);
         this.db.putFile(
           { path: target, source: 'imported', folder: null, mtime: info.mtimeMs, size: info.size },
-          analyzed.id,
+          outcome.id,
         );
       });
-      const ref = this.get(analyzed.id);
+      const ref = this.get(outcome.id);
       if (ref) result.added.push(ref);
     }
     if (result.added.length) this.scanner.changed();

@@ -41,8 +41,8 @@ export function ImportResultSheet() {
       {skipped.length > 0 && (
         <Stack gap="xs">
           <Text variant="heading">Skipped {plural(skipped.length, 'file')}</Text>
-          {skipped.map((s) => (
-            <Text key={s.name} tone="muted">
+          {skipped.map((s, i) => (
+            <Text key={`${i}-${s.name}`} tone="muted">
               {s.name}: {s.reason}
             </Text>
           ))}

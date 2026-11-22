@@ -165,4 +165,43 @@ describe('Library', () => {
     await library.importFiles([join(dir, 'a', 'song.mid'), join(dir, 'b', 'song.MID')]);
     expect(readdirSync(join(dir, 'imported')).sort()).toEqual(['song (2).mid', 'song.mid']);
   });
+
+  it('analyzes imports in one runner batch and skips duplicates within it', async () => {
+    const before = runs;
+    copyFileSync(join(demos, 'ode-to-joy.mid'), join(dir, 'music', 'ode.mid'));
+    copyFileSync(join(demos, 'ode-to-joy.mid'), join(dir, 'music', 'ode copy.mid'));
+    copyFileSync(join(demos, 'twinkle-twinkle.mid'), join(dir, 'music', 'twinkle.mid'));
+    const result = await library.importFiles([
+      join(dir, 'music', 'ode.mid'),
+      join(dir, 'music', 'ode copy.mid'),
+      join(dir, 'music', 'twinkle.mid'),
+    ]);
+    expect(runs - before).toBe(2);
+    expect(result.added).toHaveLength(2);
+    expect(result.skipped).toEqual([{ name: 'ode copy.mid', reason: 'Already in your library.' }]);
+  });
+
+  it('rejects a non-MIDI file from its header without reading the rest', async () => {
+    const big = join(dir, 'music', 'video.mid');
+    writeFileSync(big, Buffer.alloc(8 * 1024 * 1024, 1));
+    const result = await library.importFiles([big]);
+    expect(result.skipped).toEqual([{ name: 'video.mid', reason: 'Not a MIDI file.' }]);
+    expect(runs).toBe(0);
+  });
+
+  it('removes copies and reports them when the analyzer fails', async () => {
+    const failing = new Library({
+      db,
+      profile: profiles.activeIdOrNull,
+      bundledDir: join(dir, 'bundled'),
+      importDir: join(dir, 'imported'),
+      runner: () => Promise.reject(new Error('worker crashed')),
+      onStatus: () => {},
+    });
+    copyFileSync(join(demos, 'ode-to-joy.mid'), join(dir, 'music', 'ode.mid'));
+    const result = await failing.importFiles([join(dir, 'music', 'ode.mid')]);
+    expect(result.added).toEqual([]);
+    expect(result.skipped[0]?.reason).toBe('Could not analyze the file.');
+    expect(readdirSync(join(dir, 'imported'))).toEqual([]);
+  });
 });
