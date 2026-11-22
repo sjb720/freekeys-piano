@@ -4,8 +4,8 @@ import { usePlayerSession } from './hooks';
 import { PlayerToolbar } from './PlayerToolbar';
 import { SongStage } from './SongStage';
 
-export function PlayerView({ songId }: { songId: string }) {
-  const session = usePlayerSession(songId);
+export function PlayerView({ songId, startAt }: { songId: string; startAt?: number }) {
+  const session = usePlayerSession(songId, startAt);
 
   if (session.status === 'loading') {
     return (

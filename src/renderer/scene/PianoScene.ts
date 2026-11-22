@@ -53,7 +53,7 @@ export class PianoScene {
   private keys!: KeyLayout;
   private area: Area = { x: 0, y: 0, width: 0, height: 0 };
   private size = { width: 0, height: 0 };
-  private drag: { y: number; time: number } | null = null;
+  private drag: { id: number; y: number; time: number } | null = null;
   private song: Song;
   private palette: PixiPalette;
   private fallTime: number;
@@ -82,6 +82,7 @@ export class PianoScene {
     this.highway.on('globalpointermove', this.onPointerMove);
     this.highway.on('pointerup', this.onPointerUp);
     this.highway.on('pointerupoutside', this.onPointerUp);
+    this.highway.on('pointercancel', this.onPointerUp);
 
     app.ticker.add(this.frame);
   }
@@ -162,20 +163,22 @@ export class PianoScene {
     this.keyboard.setActive(this.active);
   };
 
+  // Only the first finger scrubs; extra touches would restart the drag and lose the resume state.
   private onPointerDown = (event: FederatedPointerEvent): void => {
-    this.drag = { y: event.global.y, time: this.options.position() };
+    if (this.drag) return;
+    this.drag = { id: event.pointerId, y: event.global.y, time: this.options.position() };
     this.highway.cursor = 'grabbing';
     this.options.scrub.onScrubStart();
   };
 
   private onPointerMove = (event: FederatedPointerEvent): void => {
-    if (!this.drag) return;
+    if (this.drag?.id !== event.pointerId) return;
     const seconds = ((event.global.y - this.drag.y) / this.area.height) * this.fallTime;
     this.options.scrub.onScrub(this.drag.time + seconds);
   };
 
-  private onPointerUp = (): void => {
-    if (!this.drag) return;
+  private onPointerUp = (event: FederatedPointerEvent): void => {
+    if (this.drag?.id !== event.pointerId) return;
     this.drag = null;
     this.highway.cursor = 'grab';
     this.options.scrub.onScrubEnd();

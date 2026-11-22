@@ -55,7 +55,10 @@ export default function SongPage() {
           HAND_SOURCE[song.handSource],
         ].join(' · ')}
       </Text>
-      <SongOverview song={notes} />
+      <SongOverview
+        song={notes}
+        onSeek={(time) => navigate.to(`/play/${encodeURIComponent(song.id)}?at=${time.toFixed(1)}`)}
+      />
       <Stack direction="row">
         <Button
           icon={Play}

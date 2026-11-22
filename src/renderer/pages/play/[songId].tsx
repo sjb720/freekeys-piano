@@ -1,7 +1,9 @@
 import { PlayerView } from '@renderer/features/player';
-import { useParams } from '@renderer/router';
+import { useLocation, useParams } from '@renderer/router';
 
 export default function PlayPage() {
   const { songId } = useParams<{ songId: string }>();
-  return <PlayerView key={songId} songId={songId} />;
+  const at = Number(useLocation().query.get('at'));
+  const startAt = Number.isFinite(at) && at > 0 ? at : undefined;
+  return <PlayerView key={`${songId}:${startAt}`} songId={songId} startAt={startAt} />;
 }

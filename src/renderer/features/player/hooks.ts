@@ -6,6 +6,7 @@ import {
   audioClock,
   Player,
   type PlayerState,
+  loopStartAt,
   type Transport,
   type TransportState,
 } from '@renderer/engine';
@@ -17,7 +18,7 @@ export type PlayerSession =
   | { status: 'error'; message: string }
   | { status: 'ready'; player: Player; song: Song; songId: string };
 
-export function usePlayerSession(songId: string): PlayerSession {
+export function usePlayerSession(songId: string, startAt?: number): PlayerSession {
   const [session, setSession] = useState<PlayerSession>({ status: 'loading' });
   const [sampler, setSampler] = useState<PianoSampler | null>(null);
   const volume = useSetting('volume');
@@ -67,6 +68,7 @@ export function usePlayerSession(songId: string): PlayerSession {
               .catch((error: unknown) => console.error('Could not save practice', error)),
         },
       );
+      if (startAt !== undefined) created.transport.seek(loopStartAt(song, startAt));
       setSampler(loaded);
       setSession({ status: 'ready', player: created, song, songId });
     })().catch((error: unknown) => {
@@ -77,7 +79,7 @@ export function usePlayerSession(songId: string): PlayerSession {
       live = false;
       created?.destroy();
     };
-  }, [songId]);
+  }, [songId, startAt]);
 
   useEffect(() => sampler?.setVolume(volume), [sampler, volume]);
   useEffect(() => player?.setMetronome(metronome), [player, metronome]);

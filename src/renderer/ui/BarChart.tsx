@@ -23,7 +23,8 @@ export function BarChart({ label, bars, valueText }: BarChartProps) {
         className={styles.plot}
         role="list"
         aria-label={label}
-        onPointerLeave={() => setFocused(null)}
+        // Touch pointers leave right after a tap, which would hide the readout that tap just showed.
+        onPointerLeave={(e) => e.pointerType !== 'touch' && setFocused(null)}
       >
         {bars.map((bar) => {
           const height = max ? (bar.value / max) * 100 : 0;

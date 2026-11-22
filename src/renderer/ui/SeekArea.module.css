@@ -1,0 +1,44 @@
+.area {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+.area:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--color-accent);
+  pointer-events: none;
+}
+
+.hint {
+  position: absolute;
+  top: var(--space-xs);
+  left: var(--space-xs);
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  font-size: var(--font-size-caption);
+  white-space: nowrap;
+}
+
+.flip {
+  right: var(--space-xs);
+  left: auto;
+}

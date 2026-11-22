@@ -27,10 +27,7 @@ export function Sheet({ title, open, onClose, children }: SheetProps) {
   if (!open) return null;
 
   return createPortal(
-    <div
-      className={styles.backdrop}
-      onPointerDown={(e) => e.target === e.currentTarget && onClose()}
-    >
+    <div className={styles.backdrop} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div
         ref={panel}
         role="dialog"

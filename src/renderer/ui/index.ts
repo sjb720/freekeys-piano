@@ -15,6 +15,7 @@ export {
   type SegmentedControlProps,
   type SegmentOption,
 } from './SegmentedControl';
+export { SeekArea, type SeekAreaProps } from './SeekArea';
 export { Sheet, type SheetProps } from './Sheet';
 export { Slider, type SliderProps } from './Slider';
 export { Stat, type StatProps } from './Stat';
