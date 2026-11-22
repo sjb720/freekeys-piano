@@ -1,4 +1,6 @@
-# FreeKeys
+# FreeKeys - Open Source Piano Lessons
+
+![FreeKeys playing Chopin's Nocturne in E-flat major, Op. 9 No. 2, with the left hand in blue and the right hand in green](docs/images/nocturne.gif)
 
 FreeKeys is an open-source piano practice app that runs fully offline. Notes fall onto an on-screen keyboard while you play along on a MIDI keyboard. It ships with 180 songs ranked by difficulty, splits every song into left and right hands, and can wait for you to play each note before moving on.
 
