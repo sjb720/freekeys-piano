@@ -36,4 +36,9 @@ Contributor rules live in [CLAUDE.md](CLAUDE.md); module docs in [docs/](docs/RE
 
 ## License
 
-MIT
+The code is MIT licensed. That covers the code only. Bundled content keeps its own license:
+
+- **Songs** in `resources/songs/` (other than the three demos) come from [The Mutopia Project](https://www.mutopiaproject.org/). Each file's license and typesetter are listed in [`resources/songs/CREDITS.md`](resources/songs/CREDITS.md): 138 are public domain, 6 are CC BY 3.0, and 33 are CC BY-SA. Each file's embedded title was changed to "Composer: Title"; CC BY-SA files stay under CC BY-SA. The app shows these credits under Settings → Credits & licenses.
+- **Piano samples** are Salamander Grand Piano V3 by Alexander Holm, CC BY 3.0.
+
+To refresh the songs, run `node ../freekeys-finder/scripts/download.mjs --out resources/songs` from a checkout of freekeys-finder next to this repo. It verifies each file against its manifest checksum and rewrites `CREDITS.md`.

@@ -173,6 +173,7 @@ The in-house router discovers pages with `import.meta.glob('/src/renderer/pages/
 | `play/[songId].tsx`                            | `/play/:songId`                             |
 | `settings/index.tsx`                           | `/settings` (profile settings, System menu) |
 | `settings/songs.tsx`, `settings/devices.tsx`   | `/settings/songs`, `/settings/devices`      |
+| `settings/credits.tsx`                         | `/settings/credits`                         |
 | `_layout.tsx`                                  | layout wrapping its folder                  |
 | `[...rest].tsx`                                | catch-all                                   |
 
@@ -221,7 +222,7 @@ Track-based and heuristic hand separation, hand focus, inactive-hand behavior (p
 
 ### M4 — Library and difficulty
 
-Folder scan in a utility process, SQLite index, feature extraction, scoring, a library page with sort/filter/search and favorites, a song detail page with difficulty breakdown, bundled public-domain starter pack.
+Folder scan in a utility process, SQLite index, feature extraction, scoring, a library page with sort/filter/search and favorites, a song detail page with difficulty breakdown, bundled starter pack (3 demos plus 177 Mutopia pieces in `resources/songs/<level>/`, credited in `CREDITS.md`).
 **Done when:** a folder of hundreds of MIDIs is indexed and ranked, and the rankings look reasonable against the reference set.
 
 ### M5 — Profiles and settings

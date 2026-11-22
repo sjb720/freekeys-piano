@@ -12,7 +12,7 @@ export const factorText = (factor: DifficultyFactor) =>
   factor.hand ? `${factor.label} (${factor.hand} hand)` : factor.label;
 
 export const SOURCE_LABEL: Record<SongSource, string> = {
-  bundled: 'Demo',
+  bundled: 'Included',
   library: 'Library',
   imported: 'Added',
   file: 'Opened file',

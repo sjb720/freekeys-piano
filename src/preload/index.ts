@@ -14,6 +14,8 @@ function on<E extends IpcEvent>(event: E, listener: (payload: IpcEvents[E]) => v
 const api: Api = {
   app: {
     getInfo: () => invoke('app:getInfo'),
+    credits: () => invoke('app:credits'),
+    openCreditLink: (url) => invoke('app:openCreditLink', url),
   },
   songs: {
     list: () => invoke('songs:list'),

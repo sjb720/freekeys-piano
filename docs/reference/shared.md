@@ -84,6 +84,15 @@ See `ipc.md`.
 | `cleanName`                      | `(name) => string`                                                           | Trims and collapses whitespace.                                                                                        |
 | `suggestAvatar`                  | `(profiles) => { icon, color }`                                              | Next icon and color in sequence for a new profile.                                                                     |
 
+## `credits/` (`@shared/credits`)
+
+| Name            | Signature                    | Description                                                                                                      |
+| --------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `parseCredits`  | `(markdown) => SongCredit[]` | Reads the `                                                                                                      | File | Source | Typeset by | License | `table from`CREDITS.md`. Titles come from the file name ("Bach - Fugue.mid" → "Bach: Fugue"). Rows without links are skipped. |
+| `creditUrls`    | `(credits) => Set<string>`   | Every song page, source, and license URL, plus the piano sample license. The allowlist for `app:openCreditLink`. |
+| `SAMPLE_CREDIT` |                              | Title, author, and license of the bundled Salamander piano samples.                                              |
+| `SongCredit`    | type                         | `{ file, title, page, source, sourceUrl, credit, license, licenseUrl \| null }`                                  |
+
 ## `history/`
 
 | Name                                       | Signature                                                                                  | Description                                                                                                                                   |

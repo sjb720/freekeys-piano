@@ -2,6 +2,7 @@ import type { SongSummary } from './analysis';
 import type { HistorySummary, SessionInput, SongHistory } from './history';
 import type { Profile, ProfileInput } from './profiles';
 import type { SettingValues } from './settings';
+import type { SongCredit } from './credits';
 import type { HandOverride } from './song';
 
 export type AppInfo = {
@@ -39,6 +40,8 @@ export type ScanStatus = {
 
 export interface IpcContract {
   'app:getInfo': { args: []; result: AppInfo };
+  'app:credits': { args: []; result: SongCredit[] };
+  'app:openCreditLink': { args: [url: string]; result: void };
   'songs:list': { args: []; result: SongRef[] };
   'songs:get': { args: [id: string]; result: SongRef | null };
   'songs:pick': { args: []; result: SongRef | null };
@@ -77,6 +80,8 @@ export type IpcEvent = keyof IpcEvents;
 export interface Api {
   app: {
     getInfo(): Promise<AppInfo>;
+    credits(): Promise<SongCredit[]>;
+    openCreditLink(url: string): Promise<void>;
   };
   songs: {
     list(): Promise<SongRef[]>;

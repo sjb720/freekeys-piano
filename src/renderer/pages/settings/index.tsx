@@ -1,4 +1,4 @@
-import { FolderOpen, Piano } from 'lucide-react';
+import { FolderOpen, Piano, ScrollText } from 'lucide-react';
 import { useFolders } from '@renderer/features/library';
 import { ProfileSummary } from '@renderer/features/profiles';
 import { SettingsSections } from '@renderer/features/settings';
@@ -36,6 +36,12 @@ export default function SettingsPage() {
           title="MIDI & audio"
           subtitle="Keyboard and volume"
           onPress={() => navigate.to('/settings/devices')}
+        />
+        <ListItem
+          icon={ScrollText}
+          title="Credits & licenses"
+          subtitle="Included songs and sounds"
+          onPress={() => navigate.to('/settings/credits')}
         />
       </Stack>
       {info && (

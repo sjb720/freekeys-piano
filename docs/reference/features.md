@@ -59,6 +59,13 @@ Domain components composed from `ui/`.
 | `useSong`                                                  | `(id) => SongRef \| null \| undefined` | From the library store, falling back to `songs:get`. `undefined` while loading.                                                                                                                  |
 | `levelTone` / `levelLabel` / `factorText` / `SOURCE_LABEL` |                                        | Display helpers.                                                                                                                                                                                 |
 
+## `credits/`
+
+| Name         | Props / Signature            | Description                                                                                                                                                  |
+| ------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Credits`    | —                            | MIT-covers-code note, the piano sample credit, and every bundled song with typesetter and license. Rows open their source page through `app:openCreditLink`. |
+| `useCredits` | `() => SongCredit[] \| null` | Bundled song credits from main; `null` while loading.                                                                                                        |
+
 ## `profiles/`
 
 | Name                                     | Props / Signature                              | Description                                                                                                                                        |

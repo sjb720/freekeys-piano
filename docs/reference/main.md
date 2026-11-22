@@ -9,6 +9,13 @@
 | `registerHandlers(library)`        | `handlers.ts`    | Registers all IPC handlers, including the file and folder dialogs.                                                                                                      |
 | `configurePermissions()`           | `permissions.ts` | Grants only `midi`; denies every other permission request.                                                                                                              |
 
+## `credits.ts`
+
+| Name          | Signature                     | Description                                                                  |
+| ------------- | ----------------------------- | ---------------------------------------------------------------------------- |
+| `loadCredits` | `() => Promise<SongCredit[]>` | Parses `<resources>/songs/CREDITS.md` once and caches it; `[]` when missing. |
+| `isCreditUrl` | `(url) => Promise<boolean>`   | Whether `url` is in `creditUrls`.                                            |
+
 ## `library/`
 
 | Name                           | File               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -41,13 +48,13 @@
 
 ## Packaging and releases
 
-| File                            | Description                                                                                                                                                                                                                                                              |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `electron-builder.yml`          | Linux AppImage and deb, Windows NSIS installer. Artifact names: `FreeKeys-<v>-linux-<arch>.AppImage`, `freekeys_<v>_<arch>.deb`, `FreeKeys-<v>-windows-setup.exe`. Demo songs ship as `resources/songs`.                                                                 |
-| `.github/workflows/ci.yml`      | Pushes to `main` and PRs: format, lint, typecheck, tests, then test packages as workflow artifacts.                                                                                                                                                                      |
-| `.github/workflows/release.yml` | `v*` tags: `scripts/check-release-tag.mts`, lint, tests, packages on Ubuntu and Windows, then a GitHub Release with the packages and `SHA256SUMS.txt`.                                                                                                                   |
-| `scripts/check-release-tag.mts` | `node scripts/check-release-tag.mts <tag>` fails unless the tag is `v` + the `package.json` version.                                                                                                                                                                     |
-| `scripts/release.mts`           | `pnpm release [patch\|minor\|major\|current\|x.y.z] [--skip-checks]`. Requires a clean `main` in sync with `origin`. Runs checks, bumps `package.json`, commits `Release vX.Y.Z`, creates an annotated tag, and pushes `main` and the tag atomically after confirmation. |
-| `scripts/version.mts`           | `parseVersion`, `bumpVersion(version, bump)`, `compareVersions(a, b)` for `x.y.z` versions.                                                                                                                                                                              |
+| File                            | Description                                                                                                                                                                                                                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `electron-builder.yml`          | Linux AppImage and deb, Windows NSIS installer. Artifact names: `FreeKeys-<v>-linux-<arch>.AppImage`, `freekeys_<v>_<arch>.deb`, `FreeKeys-<v>-windows-setup.exe`. Bundled songs ship from `resources/songs` (subfolders and `CREDITS.md` included) to `<resources>/songs`. |
+| `.github/workflows/ci.yml`      | Pushes to `main` and PRs: format, lint, typecheck, tests, then test packages as workflow artifacts.                                                                                                                                                                         |
+| `.github/workflows/release.yml` | `v*` tags: `scripts/check-release-tag.mts`, lint, tests, packages on Ubuntu and Windows, then a GitHub Release with the packages and `SHA256SUMS.txt`.                                                                                                                      |
+| `scripts/check-release-tag.mts` | `node scripts/check-release-tag.mts <tag>` fails unless the tag is `v` + the `package.json` version.                                                                                                                                                                        |
+| `scripts/release.mts`           | `pnpm release [patch\|minor\|major\|current\|x.y.z] [--skip-checks]`. Requires a clean `main` in sync with `origin`. Runs checks, bumps `package.json`, commits `Release vX.Y.Z`, creates an annotated tag, and pushes `main` and the tag atomically after confirmation.    |
+| `scripts/version.mts`           | `parseVersion`, `bumpVersion(version, bump)`, `compareVersions(a, b)` for `x.y.z` versions.                                                                                                                                                                                 |
 
 Only `@tonejs/midi` is a runtime `dependency` (the main process requires it). Everything the renderer uses is bundled by Vite and listed under `devDependencies`, so it isn't shipped twice.

@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, shell } from 'electron';
 import { mkdir } from 'node:fs/promises';
+import { isCreditUrl, loadCredits } from './credits';
 import { handle } from './ipc';
 import type { History } from './history';
 import type { Library } from './library';
@@ -50,6 +51,10 @@ export function registerHandlers(library: Library, profiles: Profiles, history: 
   handle('songs:showImported', async () => {
     await mkdir(library.importDir, { recursive: true });
     await shell.openPath(library.importDir);
+  });
+  handle('app:credits', loadCredits);
+  handle('app:openCreditLink', async (url) => {
+    if (await isCreditUrl(url)) await shell.openExternal(url);
   });
   handle('songs:load', (id) => library.load(id));
   handle('songs:setFavorite', (id, favorite) => library.setFavorite(id, favorite));
