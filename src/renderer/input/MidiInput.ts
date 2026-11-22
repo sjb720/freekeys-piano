@@ -61,7 +61,9 @@ export class MidiInput {
 
   private onMessage = (event: MIDIMessageEvent): void => {
     const message = parseMidiMessage(event.data);
-    if (message) this.hub.emit({ ...message, source: 'midi' });
+    if (!message) return;
+    if (message.type === 'pedal') this.hub.emitPedal({ ...message, source: 'midi' });
+    else this.hub.emit({ ...message, source: 'midi' });
   };
 }
 

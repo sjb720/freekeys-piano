@@ -9,7 +9,7 @@ import {
   type Transport,
   type TransportState,
 } from '@renderer/engine';
-import { inputHub } from '@renderer/input';
+import { inputHub, PedalTaps } from '@renderer/input';
 import { useSetting, useSettingsStore } from '@renderer/state/settingsStore';
 
 export type PlayerSession =
@@ -83,6 +83,7 @@ export function usePlayerSession(songId: string): PlayerSession {
   useEffect(() => player?.setMetronome(metronome), [player, metronome]);
   useEffect(() => player?.setOtherHand(otherHand), [player, otherHand]);
   usePlayerInput(player, sampler);
+  usePedalControl(player);
 
   return session;
 }
@@ -107,6 +108,21 @@ function usePlayerInput(player: Player | null, sampler: PianoSampler | null): vo
       for (const release of voices.values()) release();
     };
   }, [player, sampler]);
+}
+
+function usePedalControl(player: Player | null): void {
+  const pedal = useSetting('pedalControl');
+  useEffect(() => {
+    if (!player || pedal === 'off') return;
+    const taps = new PedalTaps((tap) => {
+      if (tap === 'single') return player.transport.toggle();
+      player.restart();
+      player.transport.play();
+    });
+    return inputHub.subscribePedal((event) => {
+      if (event.pedal === pedal) taps.update(event.down, performance.now());
+    });
+  }, [player, pedal]);
 }
 
 export function useTransportState(transport: Transport): TransportState {

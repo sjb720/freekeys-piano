@@ -1,6 +1,12 @@
 import { ArrowUpDown, Search, Star } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { bandCounts, LEVEL_BAND_KEYS, LEVEL_BANDS, type SongSort } from '@shared/library';
+import {
+  bandCounts,
+  LEVEL_BAND_KEYS,
+  LEVEL_BANDS,
+  querySongs,
+  type SongSort,
+} from '@shared/library';
 import { HAND_FOCUS_LABELS, HAND_FOCUSES } from '@shared/settings';
 import { useLibraryStore, useSongQueryStore } from '@renderer/state/libraryStore';
 import { Button, Chip, Field, SegmentedControl, Sheet, Stack, TextField } from '@renderer/ui';
@@ -27,7 +33,12 @@ export function LibraryFilters() {
   const query = useSongQueryStore((s) => s.query);
   const set = useSongQueryStore((s) => s.set);
   const [sortOpen, setSortOpen] = useState(false);
-  const counts = useMemo(() => (songs ? bandCounts(songs, query) : null), [songs, query]);
+  const counts = useMemo(() => {
+    if (!songs) return null;
+    const all = { ...query, favorites: false };
+    const favorites = querySongs(songs, { ...query, band: 'all', favorites: true }).length;
+    return { ...bandCounts(songs, all), favorites };
+  }, [songs, query]);
 
   const sortText =
     query.hand === 'both'
@@ -55,15 +66,16 @@ export function LibraryFilters() {
             key={band}
             label={LEVEL_BANDS[band].label}
             count={counts?.[band]}
-            selected={query.band === band}
-            onPress={() => set({ band })}
+            selected={!query.favorites && query.band === band}
+            onPress={() => set({ band, favorites: false })}
           />
         ))}
         <Chip
           label="Favorites"
           icon={Star}
+          count={counts?.favorites}
           selected={query.favorites}
-          onPress={() => set({ favorites: !query.favorites })}
+          onPress={() => set({ band: 'all', favorites: true })}
         />
       </Stack>
       <Sheet title="Sort songs" open={sortOpen} onClose={() => setSortOpen(false)}>

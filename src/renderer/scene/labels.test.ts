@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { labelFor } from './labels';
+import { labelFor, noteLetter } from './labels';
 import { noteLabelSize } from './NoteHighway';
 
 describe('labelFor', () => {
@@ -10,6 +10,14 @@ describe('labelFor', () => {
     expect(labelFor(62, false, 'white')).toBe('D');
     expect(labelFor(61, true, 'white')).toBeNull();
     expect(labelFor(61, true, 'all')).toBe('C#');
+  });
+});
+
+describe('noteLetter', () => {
+  it('drops the octave', () => {
+    expect(noteLetter(60)).toBe('C');
+    expect(noteLetter(69)).toBe('A');
+    expect(noteLetter(61)).toBe('C#');
   });
 });
 

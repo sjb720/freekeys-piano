@@ -2,7 +2,7 @@ import { BitmapText, Container, NineSliceSprite, Sprite, Texture } from 'pixi.js
 import { forEachNoteInWindow, type Note, type Song } from '@shared/song';
 import type { PixiPalette } from '@renderer/themes';
 import type { KeyLayout } from './keyLayout';
-import { installNoteLabelFont, labelFor, NOTE_LABEL_FONT } from './labels';
+import { installNoteLabelFont, NOTE_LABEL_FONT, noteLetter } from './labels';
 
 export type Area = { x: number; y: number; width: number; height: number };
 
@@ -165,7 +165,7 @@ export class NoteHighway extends Container {
       const dim = isActive(note) ? 1 : INACTIVE_ALPHA;
       sprite.tint = color;
       sprite.alpha = alpha * dim;
-      if (labels) this.drawLabel(note.pitch, key.black, sprite, palette, dim);
+      if (labels) this.drawLabel(note.pitch, sprite, palette, dim);
     });
     this.notes.release();
     this.labels.release();
@@ -185,14 +185,8 @@ export class NoteHighway extends Container {
     this.markers.release();
   }
 
-  private drawLabel(
-    pitch: number,
-    black: boolean,
-    note: NineSliceSprite,
-    palette: PixiPalette,
-    dim: number,
-  ): void {
-    const text = labelFor(pitch, black, 'all')!;
+  private drawLabel(pitch: number, note: NineSliceSprite, palette: PixiPalette, dim: number): void {
+    const text = noteLetter(pitch);
     const size = noteLabelSize(text, note.width, note.height);
     if (size === null) return;
     const label = this.labels.next();

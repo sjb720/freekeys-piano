@@ -12,6 +12,8 @@ export const labelFor = (pitch: number, black: boolean, mode: KeyLabelMode): str
   return isC ? noteName(pitch) : pitchClassName(pitch);
 };
 
+export const noteLetter = (pitch: number): string => pitchClassName(pitch);
+
 let installed = false;
 
 export function installNoteLabelFont(): void {

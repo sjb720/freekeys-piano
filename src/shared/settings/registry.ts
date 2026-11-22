@@ -42,6 +42,9 @@ export type KeyLabelMode = (typeof KEY_LABEL_MODES)[number];
 export const OTHER_HAND_MODES = ['play', 'mute'] as const;
 export type OtherHandMode = (typeof OTHER_HAND_MODES)[number];
 
+export const PEDAL_CONTROLS = ['off', 'sustain', 'soft'] as const;
+export type PedalControl = (typeof PEDAL_CONTROLS)[number];
+
 export const SETTINGS = {
   theme: {
     layer: 'profile',
@@ -70,7 +73,7 @@ export const SETTINGS = {
     layer: 'profile',
     section: 'Appearance',
     label: 'Note names on falling notes',
-    description: 'Shows the same letters as the keys on notes big enough to fit them.',
+    description: 'Shows the letter (A, C#) on notes big enough to fit it.',
     default: false,
     control: { type: 'toggle' },
   },
@@ -122,6 +125,22 @@ export const SETTINGS = {
     description: 'Which connected MIDI device to listen to.',
     default: 'all',
     control: { type: 'midiDevice' },
+  },
+  pedalControl: {
+    layer: 'app',
+    section: 'Input',
+    label: 'Pedal controls playback',
+    description:
+      'Tap the pedal to play or pause. Double-tap to restart the loop, or the song if there is no loop. The pedal still works on your keyboard’s own sound.',
+    default: 'off' as PedalControl,
+    control: {
+      type: 'segmented',
+      options: [
+        { value: 'off', label: 'Off' },
+        { value: 'sustain', label: 'Sustain (right)' },
+        { value: 'soft', label: 'Soft (left)' },
+      ],
+    },
   },
   volume: {
     layer: 'app',

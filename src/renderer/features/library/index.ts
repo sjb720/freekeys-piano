@@ -9,6 +9,8 @@ export { ScanStatusText } from './ScanStatusText';
 export { SongFolders } from './SongFolders';
 export { SongImports } from './SongImports';
 export { SongList, type SongListProps } from './SongList';
+export { SongOverview, type SongOverviewProps } from './SongOverview';
 export { useFolders } from './useFolders';
 export { useSong } from './useSong';
 export { useSongDrop } from './useSongDrop';
+export { useSongNotes } from './useSongNotes';

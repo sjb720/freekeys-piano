@@ -1,8 +1,15 @@
-import type { InputSourceKind, NoteInputEvent, NoteInputListener } from './types';
+import type {
+  InputSourceKind,
+  NoteInputEvent,
+  NoteInputListener,
+  PedalInputEvent,
+  PedalInputListener,
+} from './types';
 
 export class InputHub {
   private listeners = new Set<NoteInputListener>();
   private held = new Map<number, InputSourceKind>();
+  private pedalListeners = new Set<PedalInputListener>();
 
   subscribe = (listener: NoteInputListener): (() => void) => {
     this.listeners.add(listener);
@@ -14,6 +21,15 @@ export class InputHub {
     else if (!this.held.has(event.pitch)) return;
     else this.held.delete(event.pitch);
     for (const listener of this.listeners) listener(event);
+  }
+
+  subscribePedal = (listener: PedalInputListener): (() => void) => {
+    this.pedalListeners.add(listener);
+    return () => this.pedalListeners.delete(listener);
+  };
+
+  emitPedal(event: PedalInputEvent): void {
+    for (const listener of this.pedalListeners) listener(event);
   }
 
   heldNotes(): ReadonlyMap<number, InputSourceKind> {

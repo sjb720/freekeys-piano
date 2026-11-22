@@ -18,8 +18,24 @@ describe('parseMidiMessage', () => {
     expect(parseMidiMessage(new Uint8Array([0x80, 61, 40]))?.type).toBe('off');
   });
 
+  it('parses sustain, sostenuto, and soft pedals on any channel', () => {
+    expect(parseMidiMessage(new Uint8Array([0xb2, 64, 127]))).toEqual({
+      type: 'pedal',
+      pedal: 'sustain',
+      down: true,
+    });
+    expect(parseMidiMessage(new Uint8Array([0xb0, 66, 64]))).toMatchObject({
+      pedal: 'sostenuto',
+      down: true,
+    });
+    expect(parseMidiMessage(new Uint8Array([0xb0, 67, 63]))).toMatchObject({
+      pedal: 'soft',
+      down: false,
+    });
+  });
+
   it('ignores other messages', () => {
-    expect(parseMidiMessage(new Uint8Array([0xb0, 64, 127]))).toBeNull();
+    expect(parseMidiMessage(new Uint8Array([0xb0, 7, 100]))).toBeNull();
     expect(parseMidiMessage(new Uint8Array([0xf8]))).toBeNull();
     expect(parseMidiMessage(null)).toBeNull();
   });

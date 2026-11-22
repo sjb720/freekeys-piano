@@ -38,7 +38,7 @@ Controls: `slider` (`min/max/step/format`), `segmented` (`options`), `toggle`, `
 
 `PRACTICE_MODES` / `PracticeMode` / `PRACTICE_MODE_LABELS`: `watch`, `playAlong`, `wait`.
 
-`HAND_FOCUSES` / `HandFocus` / `HAND_FOCUS_LABELS`: `left`, `both`, `right`. `OTHER_HAND_MODES` / `OtherHandMode`: `play`, `mute`. `KEY_LABEL_MODES` / `KeyLabelMode`: `off`, `c`, `white`, `all`.
+`HAND_FOCUSES` / `HandFocus` / `HAND_FOCUS_LABELS`: `left`, `both`, `right`. `OTHER_HAND_MODES` / `OtherHandMode`: `play`, `mute`. `KEY_LABEL_MODES` / `KeyLabelMode`: `off`, `c`, `white`, `all`. `PEDAL_CONTROLS` / `PedalControl`: `off`, `sustain`, `soft` (which pedal controls playback; app layer, default `off`).
 
 `isValidSettingValue(key, value)` checks a stored value against the registry: known key, same type as the default, a listed segmented option, and slider range. `settingKeysFor(layer)` lists the keys of one layer.
 

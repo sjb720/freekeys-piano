@@ -2,7 +2,7 @@
 
 ![FreeKeys playing Chopin's Nocturne in E-flat major, Op. 9 No. 2, with the left hand in blue and the right hand in green](docs/images/nocturne.gif)
 
-FreeKeys is an open-source piano practice app that runs fully offline. Notes fall onto an on-screen keyboard while you play along on a MIDI keyboard. It ships with 180 songs ranked by difficulty, splits every song into left and right hands, and can wait for you to play each note before moving on.
+FreeKeys is an open-source piano practice app that runs fully offline. Notes fall onto an on-screen keyboard while you play along on a MIDI keyboard. It ships with 181 songs ranked by difficulty, splits every song into left and right hands, and can wait for you to play each note before moving on.
 
 It runs on Linux and Windows, with installers on the Releases page, and on macOS from source.
 
@@ -12,7 +12,7 @@ Status: early development. Milestones M0 to M4 are done and M5 (profiles and set
 
 **Library**
 
-- 180 songs included: 3 short demos plus 177 classical pieces from [The Mutopia Project](https://www.mutopiaproject.org/), from Bach minuets to Chopin études.
+- 181 songs included: 3 short demos, a Happy Birthday arrangement, and 177 classical pieces from [The Mutopia Project](https://www.mutopiaproject.org/), from Bach minuets to Chopin études.
 - Add your own songs by dragging MIDI files onto the window, from Settings → Songs, or by adding whole folders that are scanned recursively.
 - Search, filter by level (Beginner, Intermediate, Advanced), show favorites, and sort by easiest, hardest, title, or newest.
 
@@ -29,6 +29,7 @@ Status: early development. Milestones M0 to M4 are done and M5 (profiles and set
 - **Wait:** playback stops at each note or chord until you play it.
 - Practice the left hand, the right hand, or both. The app can play the other hand for you or leave it silent.
 - Loop a section, slow the tempo, turn on the metronome, and show note names on the keys and falling notes.
+- Optionally use your keyboard's pedal to control playback: tap to play or pause, double-tap to restart the loop (Settings → MIDI & audio).
 
 **Hands**
 
@@ -104,7 +105,7 @@ Contributor rules are in [CLAUDE.md](CLAUDE.md). Module docs are in [docs/](docs
 
 ### Updating the bundled songs
 
-The 177 Mutopia pieces come from the [freekeys-finder](../freekeys-finder) collection. With a checkout of freekeys-finder next to this repo, run:
+The 177 Mutopia pieces and the Happy Birthday arrangement come from the [freekeys-finder](../freekeys-finder) collection. With a checkout of freekeys-finder next to this repo, run:
 
 ```sh
 node ../freekeys-finder/scripts/download.mjs --out resources/songs
@@ -122,7 +123,7 @@ Pushing the tag starts the Release workflow. It checks that the tag matches `pac
 
 The code is MIT licensed. That license covers the code only. Bundled content keeps its own license:
 
-- **Songs:** the pieces in `resources/songs/` (all but the three demos) come from [The Mutopia Project](https://www.mutopiaproject.org/). [`resources/songs/CREDITS.md`](resources/songs/CREDITS.md) lists each file's typesetter and license: 138 are public domain, 6 are CC BY 3.0, and 33 are CC BY-SA. Each file's embedded title was changed to "Composer: Title", and the CC BY-SA files stay under CC BY-SA.
+- **Songs:** 177 of the pieces in `resources/songs/` come from [The Mutopia Project](https://www.mutopiaproject.org/), and Happy Birthday is a CC0 arrangement from freekeys-finder. [`resources/songs/CREDITS.md`](resources/songs/CREDITS.md) lists each file's source and license: 138 are public domain, 1 is CC0, 6 are CC BY 3.0, and 33 are CC BY-SA. Each file's embedded title was changed to "Composer: Title", and the CC BY-SA files stay under CC BY-SA.
 - **Piano samples:** Salamander Grand Piano V3 by Alexander Holm, CC BY 3.0.
 
 The app shows these credits under Settings → Credits & licenses.
