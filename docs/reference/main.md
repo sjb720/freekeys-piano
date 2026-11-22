@@ -38,3 +38,14 @@
 | Name      | File         | Description                                                                                                                                                                                                                                                                                                                                                                               |
 | --------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `History` | `History.ts` | `new (db, profile)`. `record(input)` validates and saves for the active profile. `summary(today)` returns total and today's time, session count, streaks, the last `CHART_DAYS` (14) days, and the 8 most recent sessions with song titles. `song(id)` returns time, sessions, completions, last played, and best scores for the active profile. Sessions are deleted with their profile. |
+
+## Packaging and releases
+
+| File                            | Description                                                                                                                                                                                              |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `electron-builder.yml`          | Linux AppImage and deb, Windows NSIS installer. Artifact names: `FreeKeys-<v>-linux-<arch>.AppImage`, `freekeys_<v>_<arch>.deb`, `FreeKeys-<v>-windows-setup.exe`. Demo songs ship as `resources/songs`. |
+| `.github/workflows/ci.yml`      | Pushes to `main` and PRs: format, lint, typecheck, tests, then test packages as workflow artifacts.                                                                                                      |
+| `.github/workflows/release.yml` | `v*` tags: `scripts/check-release-tag.mts`, lint, tests, packages on Ubuntu and Windows, then a GitHub Release with the packages and `SHA256SUMS.txt`.                                                   |
+| `scripts/check-release-tag.mts` | `node scripts/check-release-tag.mts <tag>` fails unless the tag is `v` + the `package.json` version.                                                                                                     |
+
+Only `@tonejs/midi` is a runtime `dependency` (the main process requires it). Everything the renderer uses is bundled by Vite and listed under `devDependencies`, so it isn't shipped twice.

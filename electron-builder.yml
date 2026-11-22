@@ -12,8 +12,14 @@ extraResources:
 linux:
   target: [AppImage, deb]
   category: Education
+  maintainer: FreeKeys contributors
+  syncDesktopName: true
+  artifactName: ${productName}-${version}-linux-${arch}.${ext}
+deb:
+  artifactName: ${name}_${version}_${arch}.${ext}
 win:
   target: [nsis]
+  artifactName: ${productName}-${version}-windows-setup.${ext}
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
