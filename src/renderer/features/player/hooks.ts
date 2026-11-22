@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { dayKey } from '@shared/history';
 import { parseMidi, type Song } from '@shared/song';
 import { getAudioContext, loadPianoSampler, Metronome, type PianoSampler } from '@renderer/audio';
 import {
@@ -51,6 +52,19 @@ export function usePlayerSession(songId: string): PlayerSession {
           otherHand: settings.otherHand,
           focus: 'both',
           hands: file.ref.hands,
+        },
+        {
+          onSegment: ({ stats, ...segment }) =>
+            void window.api.history
+              .record({
+                ...segment,
+                songId,
+                hits: stats.hits,
+                misses: stats.misses,
+                wrong: stats.wrong,
+                day: dayKey(new Date(segment.startedAt)),
+              })
+              .catch((error: unknown) => console.error('Could not save practice', error)),
         },
       );
       setSampler(loaded);

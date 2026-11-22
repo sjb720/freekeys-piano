@@ -1,5 +1,6 @@
 export { Avatar, type AvatarProps } from './Avatar';
 export { Badge, type BadgeProps } from './Badge';
+export { BarChart, type Bar, type BarChartProps } from './BarChart';
 export { Button, type ButtonProps } from './Button';
 export { ChoiceGrid, type Choice, type ChoiceGridProps } from './ChoiceGrid';
 export { Field, type FieldProps } from './Field';
@@ -13,6 +14,7 @@ export {
 } from './SegmentedControl';
 export { Sheet, type SheetProps } from './Sheet';
 export { Slider, type SliderProps } from './Slider';
+export { Stat, type StatProps } from './Stat';
 export { Stack, type StackProps } from './Stack';
 export { Text, type TextProps } from './Text';
 export { Tile, type TileProps } from './Tile';

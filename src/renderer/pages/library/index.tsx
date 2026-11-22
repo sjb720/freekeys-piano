@@ -1,4 +1,4 @@
-import { FolderOpen, Folders, Settings } from 'lucide-react';
+import { FolderOpen, Folders, Settings, TrendingUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { querySongs } from '@shared/library';
 import { FoldersSheet, LibraryFilters, ScanStatusText, SongList } from '@renderer/features/library';
@@ -32,6 +32,7 @@ export default function LibraryPage() {
           <Button icon={FolderOpen} onClick={openFile}>
             Open file
           </Button>
+          <IconButton icon={TrendingUp} label="Progress" onClick={() => navigate.to('/progress')} />
           <IconButton icon={Settings} label="Settings" onClick={() => navigate.to('/settings')} />
           <ProfileButton />
         </>

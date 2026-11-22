@@ -43,6 +43,11 @@ const api: Api = {
     load: () => invoke('settings:load'),
     set: (key, value) => invoke('settings:set', key, value),
   },
+  history: {
+    record: (input) => invoke('history:record', input),
+    summary: (today) => invoke('history:summary', today),
+    song: (songId) => invoke('history:song', songId),
+  },
 };
 
 contextBridge.exposeInMainWorld('api', api);

@@ -66,6 +66,14 @@ export const SETTINGS = {
       ],
     },
   },
+  noteLabels: {
+    layer: 'profile',
+    section: 'Appearance',
+    label: 'Note names on falling notes',
+    description: 'Shows the same letters as the keys on notes big enough to fit them.',
+    default: false,
+    control: { type: 'toggle' },
+  },
   practiceMode: {
     layer: 'profile',
     section: 'Practice',

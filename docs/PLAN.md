@@ -188,7 +188,7 @@ Pages are lazy-loaded. Params are typed.
 
 ### Data (SQLite)
 
-Library (M4): `folders`, `songs` (content-hash id, summary, difficulty JSON, analysis version, hand override, favorite), `files` (path → song). Planned for M5: `profiles`, `settings` (layer, profile_id, key, value), `sessions` (profile, song, mode, hands, tempo, stats JSON, timestamps), with favorites moving to per-profile rows.
+Library (M4): `folders`, `songs` (content-hash id, summary, difficulty JSON, analysis version, hand override, favorite), `files` (path → song). Profiles (M5): `profiles`, `settings` (scope `app` or profile id, key, JSON value), `favorites` (profile, song), `sessions` (profile, song, mode, focus, tempo, play time, note counts, completed, start time, local day).
 
 ## Engineering rules
 

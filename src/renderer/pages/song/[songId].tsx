@@ -1,6 +1,7 @@
 import { Play, Star } from 'lucide-react';
 import { DifficultyBreakdown, SOURCE_LABEL, useSong } from '@renderer/features/library';
 import { formatTime } from '@renderer/features/player';
+import { SongProgress } from '@renderer/features/progress';
 import { Page } from '@renderer/features/shell';
 import { useNavigate, useParams } from '@renderer/router';
 import { Button, IconButton, Stack, Text } from '@renderer/ui';
@@ -45,7 +46,6 @@ export default function SongPage() {
           HAND_SOURCE[song.handSource],
         ].join(' · ')}
       </Text>
-      <DifficultyBreakdown song={song} />
       <Stack direction="row">
         <Button
           icon={Play}
@@ -56,6 +56,8 @@ export default function SongPage() {
           Play
         </Button>
       </Stack>
+      <DifficultyBreakdown song={song} />
+      <SongProgress songId={song.id} />
     </Page>
   );
 }

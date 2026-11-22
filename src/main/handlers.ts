@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog } from 'electron';
 import { handle } from './ipc';
+import type { History } from './history';
 import type { Library } from './library';
 import type { Profiles } from './profiles';
 
@@ -19,7 +20,7 @@ async function pick(kind: 'file' | 'folder'): Promise<string | null> {
   return result.canceled ? null : (result.filePaths[0] ?? null);
 }
 
-export function registerHandlers(library: Library, profiles: Profiles): void {
+export function registerHandlers(library: Library, profiles: Profiles, history: History): void {
   handle('app:getInfo', () => ({ version: app.getVersion(), platform: process.platform }));
   handle('songs:list', library.list);
   handle('songs:get', library.get);
@@ -50,4 +51,7 @@ export function registerHandlers(library: Library, profiles: Profiles): void {
   });
   handle('settings:load', () => profiles.loadSettings());
   handle('settings:set', (key, value) => profiles.setSetting(key, value));
+  handle('history:record', (input) => history.record(input));
+  handle('history:summary', (today) => history.summary(today));
+  handle('history:song', (songId) => history.song(songId));
 }

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Note, Song } from '@shared/song';
-import { Player, type PlayerOptions } from './Player';
+import { Player, type PlayerOptions, type PracticeSegment } from './Player';
 
 const note = (id: number, start: number, pitch: number): Note => ({
   id,
@@ -29,25 +29,34 @@ describe('Player', () => {
     click: (when: number) => clicks.push(when),
     resume: () => {},
   };
+  const segments: PracticeSegment[] = [];
   const create = (
     mode: 'watch' | 'wait' | 'playAlong',
     metronome = false,
     extra: Partial<PlayerOptions> = {},
+    source: Song = song,
   ) =>
-    new Player(structuredClone(song), { now: () => time }, audio, {
-      mode,
-      metronome,
-      focus: 'both',
-      otherHand: 'play',
-      hands: { kind: 'auto' },
-      ...extra,
-    });
+    new Player(
+      structuredClone(source),
+      { now: () => time },
+      audio,
+      {
+        mode,
+        metronome,
+        focus: 'both',
+        otherHand: 'play',
+        hands: { kind: 'auto' },
+        ...extra,
+      },
+      { onSegment: (s) => segments.push(s), wallNow: () => 5000 },
+    );
 
   beforeEach(() => {
     vi.useFakeTimers();
     time = 0;
     played.length = 0;
     clicks.length = 0;
+    segments.length = 0;
   });
   afterEach(() => vi.useRealTimers());
 
@@ -156,5 +165,41 @@ describe('Player', () => {
     player.setMode('wait');
     expect(player.getState().stats.wrong).toBe(0);
     player.destroy();
+  });
+
+  const long = { ...song, duration: 20 } as Song;
+
+  it('reports a completed run when the song plays through', () => {
+    const player = create('playAlong', false, {}, long);
+    player.transport.play();
+    run(23);
+    expect(segments).toHaveLength(1);
+    expect(segments[0]).toMatchObject({ mode: 'playAlong', completed: true, startedAt: 5000 });
+    expect(segments[0]!.playTime).toBeCloseTo(22, 0);
+    expect(segments[0]!.stats.misses).toBe(4);
+    player.destroy();
+    expect(segments).toHaveLength(1);
+  });
+
+  it('does not count skipped runs as completed', () => {
+    const player = create('watch', false, {}, long);
+    player.transport.play();
+    run(1);
+    player.scrubTo(10);
+    run(12);
+    expect(segments[0]?.completed).toBe(false);
+    player.destroy();
+  });
+
+  it('reports a partial run on mode change and ignores short ones', () => {
+    const player = create('watch', false, {}, long);
+    player.transport.play();
+    run(3);
+    player.setMode('wait');
+    expect(segments).toHaveLength(0);
+    run(12);
+    player.destroy();
+    expect(segments).toHaveLength(1);
+    expect(segments[0]).toMatchObject({ mode: 'wait', completed: false, tempo: 1 });
   });
 });

@@ -1,0 +1,73 @@
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.readout {
+  min-height: 1.4em;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+}
+
+.plot {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 160px;
+  padding-top: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.column {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 4px 4px 0 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.column:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+}
+
+.focused {
+  background: var(--color-surface-raised);
+}
+
+.bar {
+  height: var(--height);
+  min-height: 0;
+  margin: 0 15%;
+  border-radius: 4px 4px 0 0;
+  background: var(--color-accent);
+}
+
+.value {
+  position: absolute;
+  bottom: calc(var(--height, 0%) + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--color-text);
+  font-size: var(--font-size-caption);
+  white-space: nowrap;
+}
+
+.ticks {
+  display: flex;
+  gap: 2px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  font-variant-numeric: tabular-nums;
+}
+
+.ticks > span {
+  flex: 1;
+  text-align: center;
+}

@@ -43,6 +43,23 @@ create table if not exists favorites (
   song_id text not null,
   primary key (profile_id, song_id)
 );
+create table if not exists sessions (
+  id integer primary key,
+  profile_id text not null references profiles(id) on delete cascade,
+  song_id text not null,
+  mode text not null,
+  focus text not null,
+  tempo real not null,
+  play_time real not null,
+  hits integer not null,
+  misses integer not null,
+  wrong integer not null,
+  completed integer not null,
+  started_at integer not null,
+  day text not null
+);
+create index if not exists sessions_profile_day on sessions(profile_id, day);
+create index if not exists sessions_profile_song on sessions(profile_id, song_id);
 `;
 
 export function openDatabase(path: string): DatabaseSync {

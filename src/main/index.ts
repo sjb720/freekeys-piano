@@ -3,6 +3,7 @@ import { app, BrowserWindow } from 'electron';
 import { registerHandlers } from './handlers';
 import { broadcast } from './ipc';
 import { databasePath, openDatabase } from './db';
+import { History } from './history';
 import { Library } from './library';
 import { runInUtilityProcess } from './library/utilityRunner';
 import { rendererDir, resourcesDir } from './paths';
@@ -25,7 +26,7 @@ app.whenReady().then(() => {
     runner: runInUtilityProcess,
     onStatus: (status) => broadcast('library:status', status),
   });
-  registerHandlers(library, profiles);
+  registerHandlers(library, profiles, new History(db, profiles.activeIdOrNull));
   createMainWindow();
   void library.scanner
     .scan()

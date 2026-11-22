@@ -1,3 +1,4 @@
+import { MIN_SESSION_SECONDS } from '@shared/history';
 import type { HandFocus, OtherHandMode, PracticeMode } from '@shared/settings';
 import { resolveHand, type Beat, type HandOverride, type Note, type Song } from '@shared/song';
 import type { NoteInputEvent } from '@renderer/input';
@@ -35,6 +36,42 @@ export type PlayerState = PlayerOptions & {
   stats: PracticeStats;
 };
 
+export type PracticeSegment = {
+  mode: PracticeMode;
+  focus: HandFocus;
+  tempo: number;
+  playTime: number;
+  stats: PracticeStats;
+  completed: boolean;
+  startedAt: number;
+};
+
+export type PlayerHooks = {
+  onSegment?: (segment: PracticeSegment) => void;
+  wallNow?: () => number;
+};
+
+type Segment = {
+  playTime: number;
+  rateTime: number;
+  startedAt: number | null;
+  fromTop: boolean;
+  skipped: boolean;
+  looped: boolean;
+};
+
+const freshSegment = (): Segment => ({
+  playTime: 0,
+  rateTime: 0,
+  startedAt: null,
+  fromTop: false,
+  skipped: false,
+  looped: false,
+});
+
+const TOP_TOLERANCE = 0.5;
+const SKIP_TOLERANCE = 1;
+
 export const isNoteActive = (note: Note, focus: HandFocus) =>
   focus === 'both' || note.hand === focus;
 
@@ -48,13 +85,17 @@ export class Player {
   private state: PlayerState;
   private listeners = new Set<() => void>();
   private resumeAfterScrub = false;
+  private segment = freshSegment();
+  private lastTick: number;
 
   constructor(
     readonly song: Song,
-    clock: Clock,
+    private readonly clock: Clock,
     private readonly audio: PlayerAudio,
     options: PlayerOptions,
+    private readonly hooks: PlayerHooks = {},
   ) {
+    this.lastTick = clock.now();
     this.transport = new Transport(clock, { duration: song.duration, start: -LEAD_IN });
     this.state = { ...options, loop: null, loopDraftStart: null, stats: EMPTY_STATS };
     this.applyHands(options.hands);
@@ -71,6 +112,10 @@ export class Player {
 
     this.unsubscribe = this.transport.subscribe((event) => {
       if (event === 'play') return audio.resume();
+      if (event === 'end') {
+        this.finishSegment(true);
+        this.restartPractice({});
+      }
       audio.notes.stopAll();
       if (event === 'seek') this.practice.reset();
       this.notes.reset();
@@ -129,6 +174,7 @@ export class Player {
       return this.update({ loopDraftStart: loopStartAt(this.song, position) });
     }
     const region = loopFrom(this.song, loopDraftStart, position);
+    this.segment.looped = true;
     this.update({ loop: region, loopDraftStart: null });
     this.transport.seek(region.start);
   }
@@ -139,6 +185,7 @@ export class Player {
   }
 
   scrubTo(time: number): void {
+    if (time > this.position() + SKIP_TOLERANCE) this.segment.skipped = true;
     this.transport.seek(time);
   }
 
@@ -153,6 +200,7 @@ export class Player {
   }
 
   destroy(): void {
+    this.finishSegment(false);
     clearInterval(this.timer);
     this.unsubscribe();
     this.practice.dispose();
@@ -161,6 +209,7 @@ export class Player {
 
   private tick = (): void => {
     this.transport.tick();
+    this.trackTime();
     const { loop } = this.state;
     if (loop && this.transport.getState().playing && this.position() >= loop.end) {
       this.transport.seek(loop.start);
@@ -180,7 +229,39 @@ export class Player {
     for (const note of this.song.notes) note.hand = resolveHand(note, override);
   }
 
+  private trackTime(): void {
+    const now = this.clock.now();
+    const dt = now - this.lastTick;
+    this.lastTick = now;
+    const { playing, rate } = this.transport.getState();
+    if (!playing || dt <= 0) return;
+    const seg = this.segment;
+    if (seg.startedAt === null) {
+      seg.startedAt = (this.hooks.wallNow ?? Date.now)();
+      seg.fromTop = this.position() <= (this.song.notes[0]?.start ?? 0) + TOP_TOLERANCE;
+    }
+    seg.playTime += dt;
+    seg.rateTime += dt * rate;
+  }
+
+  private finishSegment(reachedEnd: boolean): void {
+    const seg = this.segment;
+    this.segment = freshSegment();
+    if (seg.playTime < MIN_SESSION_SECONDS || seg.startedAt === null) return;
+    const { mode, focus, stats, loop } = this.state;
+    this.hooks.onSegment?.({
+      mode,
+      focus,
+      stats,
+      playTime: seg.playTime,
+      tempo: seg.rateTime / seg.playTime,
+      completed: reachedEnd && seg.fromTop && !seg.skipped && !seg.looped && !loop,
+      startedAt: seg.startedAt,
+    });
+  }
+
   private restartPractice(patch: Partial<PlayerState>): void {
+    this.finishSegment(false);
     this.practice.dispose();
     this.state = { ...this.state, ...patch, stats: EMPTY_STATS };
     this.practice = this.createPractice();

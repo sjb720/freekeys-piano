@@ -8,7 +8,8 @@ export {
   type KeyRange,
   type KeyRect,
 } from './keyLayout';
-export { NoteHighway, type Area } from './NoteHighway';
+export { labelFor, installNoteLabelFont, NOTE_LABEL_FONT } from './labels';
+export { NoteHighway, noteLabelSize, type Area, type HighwayFrame } from './NoteHighway';
 export { PianoKeyboard } from './PianoKeyboard';
 export {
   PianoScene,

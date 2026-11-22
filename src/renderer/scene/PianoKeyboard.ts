@@ -1,17 +1,10 @@
 import { Container, Sprite, Text, Texture, type FederatedPointerEvent } from 'pixi.js';
 import type { KeyLabelMode } from '@shared/settings';
-import { noteName, pitchClassName } from '@shared/song';
 import { TINT_NONE, type ColorToken, type PixiPalette } from '@renderer/themes';
 import { BLACK_KEY_HEIGHT, type KeyLayout } from './keyLayout';
+import { LABEL_FONT_FAMILY, labelFor } from './labels';
 
 const KEY_GAP = 2;
-const LABEL_FONT = 'system-ui, sans-serif';
-
-export const labelFor = (pitch: number, black: boolean, mode: KeyLabelMode): string | null => {
-  const isC = pitch % 12 === 0;
-  if (mode === 'off' || (mode === 'c' && !isC) || (mode === 'white' && black)) return null;
-  return isC ? noteName(pitch) : pitchClassName(pitch);
-};
 
 export class PianoKeyboard extends Container {
   private readonly backdrop = new Sprite(Texture.WHITE);
@@ -107,7 +100,7 @@ export class PianoKeyboard extends Container {
       const label = new Text({
         text,
         resolution: 2,
-        style: { fontFamily: LABEL_FONT, fontSize, fontWeight: '600', fill: TINT_NONE },
+        style: { fontFamily: LABEL_FONT_FAMILY, fontSize, fontWeight: '600', fill: TINT_NONE },
       });
       const { color, alpha } = this.palette[key.black ? 'keyLabelOnBlack' : 'keyLabel'];
       label.tint = color;

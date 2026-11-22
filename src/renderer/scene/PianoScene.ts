@@ -32,6 +32,7 @@ export type PianoSceneOptions = {
   palette: PixiPalette;
   fallTime: number;
   keyLabels: KeyLabelMode;
+  noteLabels: boolean;
   scrub: ScrubHandlers;
 };
 
@@ -56,6 +57,7 @@ export class PianoScene {
   private song: Song;
   private palette: PixiPalette;
   private fallTime: number;
+  private noteLabels: boolean;
 
   constructor(
     private readonly app: Application,
@@ -64,6 +66,7 @@ export class PianoScene {
     this.song = options.song;
     this.palette = options.palette;
     this.fallTime = options.fallTime;
+    this.noteLabels = options.noteLabels;
 
     const corner = new Graphics().roundRect(0, 0, 24, 24, 6).fill(TINT_NONE);
     this.noteTexture = app.renderer.generateTexture({ target: corner, resolution: 2 });
@@ -91,6 +94,10 @@ export class PianoScene {
 
   setFallTime(seconds: number): void {
     this.fallTime = seconds;
+  }
+
+  setNoteLabels(on: boolean): void {
+    this.noteLabels = on;
   }
 
   setKeyLabels(mode: KeyLabelMode): void {
@@ -131,16 +138,17 @@ export class PianoScene {
     if (width !== this.size.width || height !== this.size.height) this.relayout();
 
     const position = this.options.position();
-    this.highway.render(
-      this.song,
+    this.highway.render({
+      song: this.song,
       position,
-      this.fallTime,
-      this.keys,
-      this.area,
-      this.palette,
-      this.options.markers(),
-      this.options.isActive,
-    );
+      fallTime: this.fallTime,
+      keys: this.keys,
+      area: this.area,
+      palette: this.palette,
+      markers: this.options.markers(),
+      isActive: this.options.isActive,
+      labels: this.noteLabels,
+    });
 
     this.active.clear();
     forEachNoteInWindow(this.song, position, position + 1e-3, (note) => {

@@ -1,1 +1,5 @@
 * text=auto eol=lf
+*.mid binary
+*.midi binary
+*.mp3 binary
+*.png binary

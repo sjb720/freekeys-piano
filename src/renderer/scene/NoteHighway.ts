@@ -1,7 +1,8 @@
-import { Container, NineSliceSprite, Sprite, Texture } from 'pixi.js';
+import { BitmapText, Container, NineSliceSprite, Sprite, Texture } from 'pixi.js';
 import { forEachNoteInWindow, type Note, type Song } from '@shared/song';
 import type { PixiPalette } from '@renderer/themes';
 import type { KeyLayout } from './keyLayout';
+import { installNoteLabelFont, labelFor, NOTE_LABEL_FONT } from './labels';
 
 export type Area = { x: number; y: number; width: number; height: number };
 
@@ -10,6 +11,26 @@ const MIN_NOTE_HEIGHT = 6;
 const CORNER = 6;
 const MARKER = 3;
 const INACTIVE_ALPHA = 0.3;
+const LABEL_MAX = 14;
+const LABEL_MIN = 8;
+const LABEL_PAD = 3;
+
+export type HighwayFrame = {
+  song: Song;
+  position: number;
+  fallTime: number;
+  keys: KeyLayout;
+  area: Area;
+  palette: PixiPalette;
+  markers: readonly number[];
+  isActive: (note: Note) => boolean;
+  labels: boolean;
+};
+
+export const noteLabelSize = (text: string, width: number, height: number): number | null => {
+  const size = Math.min(LABEL_MAX, width / (0.62 * text.length + 0.3));
+  return size >= LABEL_MIN && height >= size + LABEL_PAD * 2 ? size : null;
+};
 
 class Pool<T extends Container> {
   private items: T[] = [];
@@ -44,6 +65,8 @@ export class NoteHighway extends Container {
   private readonly lineLayer = new Container();
   private readonly noteLayer = new Container();
   private readonly markerLayer = new Container();
+  private readonly labelLayer = new Container();
+  private readonly labels: Pool<BitmapText>;
   private readonly lanes: Pool<Sprite>;
   private readonly lines: Pool<Sprite>;
   private readonly markers: Pool<Sprite>;
@@ -56,8 +79,15 @@ export class NoteHighway extends Container {
       this.laneLayer,
       this.lineLayer,
       this.noteLayer,
+      this.labelLayer,
       this.markerLayer,
     );
+    installNoteLabelFont();
+    this.labels = new Pool(this.labelLayer, () => {
+      const text = new BitmapText({ text: '', style: { fontFamily: NOTE_LABEL_FONT } });
+      text.anchor.set(0.5, 1);
+      return text;
+    });
     const line = () => new Sprite(Texture.WHITE);
     this.lanes = new Pool(this.laneLayer, line);
     this.lines = new Pool(this.lineLayer, line);
@@ -91,16 +121,17 @@ export class NoteHighway extends Container {
     this.lanes.release();
   }
 
-  render(
-    song: Song,
-    position: number,
-    fallTime: number,
-    keys: KeyLayout,
-    area: Area,
-    palette: PixiPalette,
-    markers: readonly number[] = [],
-    isActive: (note: Note) => boolean = () => true,
-  ): void {
+  render({
+    song,
+    position,
+    fallTime,
+    keys,
+    area,
+    palette,
+    markers,
+    isActive,
+    labels,
+  }: HighwayFrame): void {
     const bottom = area.y + area.height;
     const pxPerSecond = area.height / fallTime;
     const end = position + fallTime;
@@ -131,10 +162,13 @@ export class NoteHighway extends Container {
       sprite.width = Math.max(key.width - NOTE_INSET * 2, CORNER * 2);
       sprite.height = Math.max(base - top, MIN_NOTE_HEIGHT);
       const { color, alpha } = palette[note.hand === 'left' ? 'handLeft' : 'handRight'];
+      const dim = isActive(note) ? 1 : INACTIVE_ALPHA;
       sprite.tint = color;
-      sprite.alpha = isActive(note) ? alpha : alpha * INACTIVE_ALPHA;
+      sprite.alpha = alpha * dim;
+      if (labels) this.drawLabel(note.pitch, key.black, sprite, palette, dim);
     });
     this.notes.release();
+    this.labels.release();
 
     for (const time of markers) {
       if (time < position || time > end) continue;
@@ -149,5 +183,24 @@ export class NoteHighway extends Container {
       marker.alpha = palette.loopMarker.alpha;
     }
     this.markers.release();
+  }
+
+  private drawLabel(
+    pitch: number,
+    black: boolean,
+    note: NineSliceSprite,
+    palette: PixiPalette,
+    dim: number,
+  ): void {
+    const text = labelFor(pitch, black, 'all')!;
+    const size = noteLabelSize(text, note.width, note.height);
+    if (size === null) return;
+    const label = this.labels.next();
+    label.text = text;
+    label.style.fontSize = size;
+    label.x = note.x + note.width / 2;
+    label.y = note.y + note.height - LABEL_PAD;
+    label.tint = palette.noteLabel.color;
+    label.alpha = palette.noteLabel.alpha * dim;
   }
 }

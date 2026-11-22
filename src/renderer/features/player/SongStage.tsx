@@ -20,15 +20,17 @@ export function SongStage({ player }: { player: Player }) {
   const palette = useMemo(() => toPixiPalette(theme), [theme]);
   const fallTime = useSetting('noteFallTime');
   const keyLabels = useSetting('keyLabels');
+  const noteLabels = useSetting('noteLabels');
   const scene = useRef<PianoScene | null>(null);
-  const latest = useRef({ palette, fallTime, keyLabels });
+  const latest = useRef({ palette, fallTime, keyLabels, noteLabels });
 
   useEffect(() => {
-    latest.current = { palette, fallTime, keyLabels };
+    latest.current = { palette, fallTime, keyLabels, noteLabels };
     scene.current?.setPalette(palette);
     scene.current?.setFallTime(fallTime);
     scene.current?.setKeyLabels(keyLabels);
-  }, [palette, fallTime, keyLabels]);
+    scene.current?.setNoteLabels(noteLabels);
+  }, [palette, fallTime, keyLabels, noteLabels]);
 
   const onReady = useCallback(
     (app: Application) => {

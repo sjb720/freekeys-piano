@@ -1,4 +1,6 @@
 out
 dist
 release
+coverage
+fixtures
 pnpm-lock.yaml

@@ -28,6 +28,7 @@ export const COLOR_TOKENS = [
   'loopMarker',
   'keyLabel',
   'keyLabelOnBlack',
+  'noteLabel',
   'avatarInk',
   'avatar1',
   'avatar2',

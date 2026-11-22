@@ -1,4 +1,5 @@
 import type { SongSummary } from './analysis';
+import type { HistorySummary, SessionInput, SongHistory } from './history';
 import type { Profile, ProfileInput } from './profiles';
 import type { SettingValues } from './settings';
 import type { HandOverride } from './song';
@@ -52,6 +53,9 @@ export interface IpcContract {
   'profiles:select': { args: [id: string | null]; result: Profile | null };
   'settings:load': { args: []; result: Partial<SettingValues> };
   'settings:set': { args: [key: string, value: unknown]; result: void };
+  'history:record': { args: [input: SessionInput]; result: void };
+  'history:summary': { args: [today: string]; result: HistorySummary };
+  'history:song': { args: [songId: string]; result: SongHistory };
 }
 
 export interface IpcEvents {
@@ -94,5 +98,10 @@ export interface Api {
   settings: {
     load(): Promise<Partial<SettingValues>>;
     set(key: string, value: unknown): Promise<void>;
+  };
+  history: {
+    record(input: SessionInput): Promise<void>;
+    summary(today: string): Promise<HistorySummary>;
+    song(songId: string): Promise<SongHistory>;
   };
 }
