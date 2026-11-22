@@ -24,7 +24,7 @@ describe('bundled songs', () => {
   it('names a typesetter and license for each', () => {
     for (const credit of credits) {
       expect(credit.credit, credit.file).not.toBe('');
-      expect(credit.license, credit.file).toMatch(/^(Public Domain|CC BY(-SA)? \d\.\d)$/);
+      expect(credit.license, credit.file).toMatch(/^(Public Domain|CC0 1\.0|CC BY(-SA)? \d\.\d)$/);
     }
   });
 });
