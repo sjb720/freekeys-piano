@@ -8,7 +8,17 @@ const alias = {
 };
 
 export default defineConfig({
-  main: { resolve: { alias } },
+  main: {
+    resolve: { alias },
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve('src/main/index.ts'),
+          libraryWorker: resolve('src/main/library/worker.ts'),
+        },
+      },
+    },
+  },
   preload: { resolve: { alias } },
   renderer: {
     resolve: { alias },

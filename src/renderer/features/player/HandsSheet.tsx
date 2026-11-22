@@ -1,6 +1,5 @@
 import { noteName, type HandOverride } from '@shared/song';
 import type { Player } from '@renderer/engine';
-import { setHandOverride } from '@renderer/state/handOverrideStore';
 import { Field, SegmentedControl, Sheet, Slider, Stack, Text } from '@renderer/ui';
 import { usePlayerState } from './hooks';
 
@@ -30,7 +29,7 @@ export function HandsSheet({ player, songId, open, onClose }: HandsSheetProps) {
 
   const apply = (override: HandOverride) => {
     player.setHands(override);
-    setHandOverride(songId, override);
+    void window.api.songs.setHands(songId, override);
   };
 
   const choose = (kind: Kind) =>

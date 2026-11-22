@@ -9,20 +9,35 @@ Single typed contract shared by main and renderer.
 3. Implement it in `src/preload/index.ts` with `invoke`.
 4. Register a handler in `src/main/handlers.ts` with `handle`.
 
+Push events from main: add the payload to `IpcEvents`, send with `broadcast`, subscribe in preload with `on`.
+
 ## Channels
 
-| Channel       | Args | Result                            | Renderer call               |
-| ------------- | ---- | --------------------------------- | --------------------------- |
-| `app:getInfo` | —    | `AppInfo { version, platform }`   | `window.api.app.getInfo()`  |
-| `songs:list`  | —    | `SongRef[]`                       | `window.api.songs.list()`   |
-| `songs:pick`  | —    | `SongRef \| null` (open dialog)   | `window.api.songs.pick()`   |
-| `songs:load`  | `id` | `SongFile { ref, bytes } \| null` | `window.api.songs.load(id)` |
+| Channel                | Args                 | Result                                                       | Renderer call                    |
+| ---------------------- | -------------------- | ------------------------------------------------------------ | -------------------------------- |
+| `app:getInfo`          | —                    | `AppInfo { version, platform }`                              | `api.app.getInfo()`              |
+| `songs:list`           | —                    | `SongRef[]` (songs with at least one file)                   | `api.songs.list()`               |
+| `songs:get`            | `id`                 | `SongRef \| null`                                            | `api.songs.get(id)`              |
+| `songs:pick`           | —                    | `SongRef \| null`. Opens a file dialog and imports the file. | `api.songs.pick()`               |
+| `songs:load`           | `id`                 | `SongFile { ref, bytes } \| null`                            | `api.songs.load(id)`             |
+| `songs:setFavorite`    | `id`, `favorite`     | —                                                            | `api.songs.setFavorite(id, on)`  |
+| `songs:setHands`       | `id`, `HandOverride` | `SongRef \| null`, re-analyzed with the override             | `api.songs.setHands(id, hands)`  |
+| `library:folders`      | —                    | `string[]`                                                   | `api.library.folders()`          |
+| `library:addFolder`    | —                    | `string[]`. Opens a folder dialog, then scans.               | `api.library.addFolder()`        |
+| `library:removeFolder` | `path`               | `string[]`                                                   | `api.library.removeFolder(path)` |
+| `library:rescan`       | —                    | Resolves when the scan finishes.                             | `api.library.rescan()`           |
+| `library:status`       | —                    | `ScanStatus`                                                 | `api.library.status()`           |
 
-`SongRef = { id, title, source: 'bundled' | 'file' }`. Ids are `demo-<name>` or `file-<sha1(path)[:12]>`.
+| Event            | Payload                                                                                                        | Renderer call                             |
+| ---------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `library:status` | `ScanStatus { scanning, done, total, failed, revision }`. `revision` increments whenever library data changes. | `api.library.onStatus(fn) => unsubscribe` |
+
+`SongRef = SongSummary & { id, source: 'bundled' | 'library' | 'file', favorite, hands, addedAt }`. `id` is the first 16 hex characters of the SHA-1 of the file's bytes, so identical files share one song.
 
 ## Helpers
 
-| Name                       | File               | Description                        |
-| -------------------------- | ------------------ | ---------------------------------- |
-| `handle(channel, handler)` | `main/ipc.ts`      | Type-checked `ipcMain.handle`.     |
-| `invoke(channel, ...args)` | `preload/index.ts` | Type-checked `ipcRenderer.invoke`. |
+| Name                                         | File               | Description                                                    |
+| -------------------------------------------- | ------------------ | -------------------------------------------------------------- |
+| `handle(channel, handler)`                   | `main/ipc.ts`      | Type-checked `ipcMain.handle`.                                 |
+| `broadcast(event, payload)`                  | `main/ipc.ts`      | Sends an `IpcEvents` payload to every window.                  |
+| `invoke(channel, ...args)` / `on(event, fn)` | `preload/index.ts` | Type-checked `ipcRenderer.invoke` / listener with unsubscribe. |

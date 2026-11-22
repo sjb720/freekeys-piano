@@ -2,7 +2,7 @@
 
 The only place raw interactive/text elements are allowed (enforced by `piano/no-raw-elements`). Components take no `className`/`style`; extend via props.
 
-Shared types: `Space` = `none`, `xs`, `sm`, `md`, `lg`, `xl`; `Variant` = `primary`, `secondary`, `ghost`, `danger`; `ControlSize` = `md`, `lg`.
+Shared types: `Space` = `none`, `xs`, `sm`, `md`, `lg`, `xl`; `Variant` = `primary`, `secondary`, `ghost`, `danger`; `ControlSize` = `md`, `lg`; `Tone` = `neutral`, `accent`, `success`, `warning`, `danger`.
 
 | Component             | Key props                                                                                                | Description                                                                                                |
 | --------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -15,6 +15,9 @@ Shared types: `Space` = `none`, `xs`, `sm`, `md`, `lg`, `xl`; `Variant` = `prima
 | `Field`               | `label`, `description?`, `value?`, `trailing?`, `children?`                                              | Label row (with value text or a `trailing` control), optional description, then the control.               |
 | `Toggle`              | `label`, `checked`, `onChange`                                                                           | On/off switch (`role=switch`).                                                                             |
 | `ListItem`            | `title`, `subtitle?`, `icon?`, `trailing?` (defaults to chevron), `onPress`                              | Full-width pressable row.                                                                                  |
+| `TextField`           | `label`, `value`, `onChange`, `placeholder?`, `icon?`, `type='text'` (`text`, `search`)                  | Pill-shaped text input with a leading icon and a clear button.                                             |
+| `Badge`               | `tone='neutral'`, `size='md'` (`md`, `lg`), `children`                                                   | Outlined pill in the tone color.                                                                           |
+| `Meter`               | `label`, `value` (0 to 1), `tone='accent'`                                                               | Read-only bar (`role=meter`).                                                                              |
 | `Sheet`               | `title`, `open`, `onClose`, `children`                                                                   | Modal panel in a portal over an `overlay` backdrop. Closes on Escape, a backdrop tap, or the close button. |
 | `SegmentedControl<T>` | `label`, `options: {value,label,icon?}[]`, `value`, `onChange`                                           | Single-choice radio group rendered as segments.                                                            |
 

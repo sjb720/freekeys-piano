@@ -9,7 +9,6 @@ import {
   type TransportState,
 } from '@renderer/engine';
 import { inputHub } from '@renderer/input';
-import { getHandOverride } from '@renderer/state/handOverrideStore';
 import { useSetting, useSettingsStore } from '@renderer/state/settingsStore';
 
 export type PlayerSession =
@@ -51,7 +50,7 @@ export function usePlayerSession(songId: string): PlayerSession {
           metronome: settings.metronome,
           otherHand: settings.otherHand,
           focus: 'both',
-          hands: getHandOverride(songId),
+          hands: file.ref.hands,
         },
       );
       setSampler(loaded);

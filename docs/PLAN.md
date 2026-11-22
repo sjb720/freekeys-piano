@@ -34,7 +34,7 @@ Reference product: [Artie](https://apps.apple.com/us/app/artie-learn-piano-with-
 | MIDI devices    | Web MIDI API                                                                                |
 | Audio out       | In-house Web Audio sampler with bundled Salamander Grand samples (CC-BY)                    |
 | Mic             | Web Audio + `AudioWorklet`, custom DSP                                                      |
-| Storage         | SQLite via `better-sqlite3` in the main process                                             |
+| Storage         | SQLite via built-in `node:sqlite` in the main process (no native module to rebuild)         |
 | Tests           | Vitest (unit), Playwright for Electron (e2e)                                                |
 | Package manager | pnpm                                                                                        |
 | License         | MIT                                                                                         |
@@ -178,14 +178,14 @@ Pages are lazy-loaded. Params are typed.
 
 - On launch, a profile picker shows a tile grid plus an "Add profile" tile. Profiles are unlimited, each with a name, avatar, and theme. An optional setting auto-selects the last-used profile.
 - Settings have two layers:
-  - **App**: MIDI devices, audio output device, kiosk/fullscreen, library folders.
+  - **App**: MIDI devices, audio output device, kiosk/fullscreen. Library folders are library data, managed from the library page.
   - **Profile**: theme, hand colors, default mode, wait tolerance, mic sensitivity, note speed, inactive-hand behavior.
 - A profile value overrides an app value when both exist.
 - **Schema-driven**: every setting is declared once in `shared/settings` with key, layer, type, default, label, and control. The settings page renders from that registry using `ui/` controls. Adding a setting means adding one registry entry.
 
 ### Data (SQLite)
 
-`songs` (path, hash, metadata, analysis JSON, difficulty), `hand_overrides`, `profiles`, `settings` (layer, profile_id, key, value), `sessions` (profile, song, mode, hands, tempo, stats JSON, timestamps), `favorites`.
+Library (M4): `folders`, `songs` (content-hash id, summary, difficulty JSON, analysis version, hand override, favorite), `files` (path → song). Planned for M5: `profiles`, `settings` (layer, profile_id, key, value), `sessions` (profile, song, mode, hands, tempo, stats JSON, timestamps), with favorites moving to per-profile rows.
 
 ## Engineering rules
 
@@ -243,11 +243,11 @@ Kiosk mode, touch audit (target sizes, no hover dependencies), performance audit
 
 ## Risks
 
-| Risk                                             | Mitigation                                                                 |
-| ------------------------------------------------ | -------------------------------------------------------------------------- |
-| Mic chord accuracy (octaves, room noise)         | Score-informed checking, calibration, strictness setting; MIDI recommended |
-| Hand-split heuristic errors                      | Prefer track data; manual override; fixture tests on known pieces          |
-| Difficulty weights feel wrong                    | Reference ranking set; factor breakdown visible to users                   |
-| `better-sqlite3` native rebuilds (Electron, ARM) | `electron-builder` install-app-deps; CI matrix                             |
-| Audio latency on Linux                           | Low-latency `AudioContext` hint, measure in M1, MIDI out alternative       |
-| Pi performance                                   | Keep the scene batched and pooled from day one                             |
+| Risk                                                | Mitigation                                                                 |
+| --------------------------------------------------- | -------------------------------------------------------------------------- |
+| Mic chord accuracy (octaves, room noise)            | Score-informed checking, calibration, strictness setting; MIDI recommended |
+| Hand-split heuristic errors                         | Prefer track data; manual override; fixture tests on known pieces          |
+| Difficulty weights feel wrong                       | Reference ranking set; factor breakdown visible to users                   |
+| `node:sqlite` is still flagged experimental in Node | Small wrapper (`LibraryDb`); swap to `better-sqlite3` if the API changes   |
+| Audio latency on Linux                              | Low-latency `AudioContext` hint, measure in M1, MIDI out alternative       |
+| Pi performance                                      | Keep the scene batched and pooled from day one                             |

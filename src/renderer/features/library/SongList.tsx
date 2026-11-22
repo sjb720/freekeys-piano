@@ -1,18 +1,32 @@
-import { Music } from 'lucide-react';
+import { Music, Star } from 'lucide-react';
 import type { SongRef } from '@shared/ipc';
-import { Stack, ListItem } from '@renderer/ui';
-
-const SOURCE_LABEL: Record<SongRef['source'], string> = {
-  bundled: 'Demo',
-  file: 'Opened file',
-};
+import { songLevel } from '@shared/library';
+import type { HandFocus } from '@shared/settings';
+import { formatTime } from '@renderer/features/player';
+import { Icon, ListItem, Stack } from '@renderer/ui';
+import { factorText, SOURCE_LABEL } from './difficulty';
+import { LevelBadge } from './LevelBadge';
 
 export type SongListProps = {
-  songs: SongRef[];
+  songs: readonly SongRef[];
+  hand: HandFocus;
   onSelect: (song: SongRef) => void;
 };
 
-export function SongList({ songs, onSelect }: SongListProps) {
+const HINT_LEVEL = 3;
+
+const subtitle = (song: SongRef) =>
+  [
+    formatTime(song.duration),
+    SOURCE_LABEL[song.source],
+    song.difficulty.level >= HINT_LEVEL &&
+      song.difficulty.factors[0] &&
+      factorText(song.difficulty.factors[0]),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+export function SongList({ songs, hand, onSelect }: SongListProps) {
   return (
     <Stack gap="sm">
       {songs.map((song) => (
@@ -20,8 +34,14 @@ export function SongList({ songs, onSelect }: SongListProps) {
           key={song.id}
           icon={Music}
           title={song.title}
-          subtitle={SOURCE_LABEL[song.source]}
+          subtitle={subtitle(song)}
           onPress={() => onSelect(song)}
+          trailing={
+            <Stack direction="row" align="center" gap="sm">
+              {song.favorite && <Icon icon={Star} size="sm" />}
+              <LevelBadge level={songLevel(song, hand)} />
+            </Stack>
+          }
         />
       ))}
     </Stack>
