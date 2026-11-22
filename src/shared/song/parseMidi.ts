@@ -1,9 +1,9 @@
 import { Midi } from '@tonejs/midi';
-import { handsByTrack, type TrackSummary } from './hands';
+import { handsByTrack, repairReach, type TrackSummary } from './hands';
 import { beatTicks, measureStartTicks } from './measures';
 import { decodeMidiText, isPlaceholderTitle } from './midiText';
 import { firstTrackHasNotes, midiFormat, midiTrackCount } from './rawMidi';
-import { separateHands } from './separateHands';
+import { separateHands, SLICE_WINDOW } from './separateHands';
 import type { Note, Song, SongTrack } from './types';
 
 const PERCUSSION_CHANNEL = 9;
@@ -14,6 +14,22 @@ function embeddedTitle(midi: Midi, bytes: Uint8Array): string {
   const namesTrack =
     midiFormat(bytes) === 1 && midiTrackCount(bytes) > 1 && firstTrackHasNotes(bytes);
   return namesTrack || isPlaceholderTitle(title) ? '' : title;
+}
+
+// Arrangements often double a part on the same key; a piano sounds it once, so keep the longest.
+function mergeDoubledNotes(sorted: Note[]): Note[] {
+  const kept: Note[] = [];
+  const recent = new Map<number, Note>();
+  for (const note of sorted) {
+    const twin = recent.get(note.pitch);
+    if (twin && note.start - twin.start <= SLICE_WINDOW) {
+      twin.duration = Math.max(twin.duration, note.duration);
+      continue;
+    }
+    recent.set(note.pitch, note);
+    kept.push(note);
+  }
+  return kept;
 }
 
 export function parseMidi(bytes: Uint8Array, fallbackTitle: string): Song {
@@ -41,26 +57,32 @@ export function parseMidi(bytes: Uint8Array, fallbackTitle: string): Song {
     name: t.name,
     meanPitch: tracks[i]!.track.notes.reduce((sum, n) => sum + n.midi, 0) / t.noteCount,
   }));
-  const trackHands = handsByTrack(summaries);
-
-  const notes: Note[] = tracks
-    .flatMap(({ track, index }) =>
-      track.notes.map((n) => ({
-        id: 0,
-        pitch: n.midi,
-        start: n.time,
-        duration: n.duration,
-        velocity: n.velocity,
-        hand: trackHands?.get(index) ?? 'right',
-        autoHand: trackHands?.get(index) ?? 'right',
-        track: index,
-      })),
-    )
-    .sort((a, b) => a.start - b.start || a.pitch - b.pitch);
+  const notes = mergeDoubledNotes(
+    tracks
+      .flatMap(({ track, index }) =>
+        track.notes.map((n): Note => ({
+          id: 0,
+          pitch: n.midi,
+          start: n.time,
+          duration: n.duration,
+          velocity: n.velocity,
+          hand: 'right',
+          autoHand: 'right',
+          track: index,
+        })),
+      )
+      .sort((a, b) => a.start - b.start || a.pitch - b.pitch),
+  );
   notes.forEach((n, i) => (n.id = i));
-  if (!trackHands) {
-    separateHands(notes).forEach((hand, i) => (notes[i]!.hand = notes[i]!.autoHand = hand));
+
+  const trackHands = handsByTrack(summaries, notes);
+  if (trackHands) {
+    for (const n of notes) n.hand = trackHands.get(n.track) ?? 'right';
+    repairReach(notes);
+  } else {
+    separateHands(notes).forEach((hand, i) => (notes[i]!.hand = hand));
   }
+  for (const n of notes) n.autoHand = n.hand;
 
   const endTicks = Math.max(midi.durationTicks, 1);
   const signatures = header.timeSignatures.map((s) => ({

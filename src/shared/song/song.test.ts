@@ -54,13 +54,65 @@ describe('parseMidi', () => {
     ]);
   });
 
-  it('uses the heuristic for three or more unnamed tracks', () => {
+  it('assigns three unnamed tracks by what each hand can play', () => {
+    // Melody on top, a left-hand chord track and a bass track that alternate, like a nocturne.
     const bytes = buildMidi((m) => {
-      m.addTrack().addNote({ midi: 40, time: 0, duration: 1 });
+      const melody = m.addTrack();
+      const chords = m.addTrack();
+      const bass = m.addTrack();
+      for (let bar = 0; bar < 8; bar++) {
+        const t = bar * 2;
+        melody.addNote({ midi: 79, time: t, duration: 1 });
+        melody.addNote({ midi: 84, time: t + 1, duration: 1 });
+        bass.addNote({ midi: 39, time: t, duration: 0.5 });
+        for (const midi of [55, 63, 67]) chords.addNote({ midi, time: t + 0.5, duration: 0.5 });
+        for (const midi of [63, 67]) chords.addNote({ midi, time: t + 1, duration: 0.5 });
+      }
+    });
+    const song = parseMidi(bytes, 'x');
+    expect(song.handSource).toBe('tracks');
+    const handOf = (track: number) =>
+      new Set(song.notes.filter((n) => n.track === track).map((n) => n.hand));
+    expect([...handOf(0)]).toEqual(['right']);
+    expect([...handOf(1)]).toEqual(['left']);
+    expect([...handOf(2)]).toEqual(['left']);
+  });
+
+  it('falls back to the heuristic when a track spans both hands', () => {
+    const bytes = buildMidi((m) => {
+      const both = m.addTrack();
+      for (let i = 0; i < 8; i++) {
+        both.addNote({ midi: 36, time: i, duration: 1 });
+        both.addNote({ midi: 84, time: i, duration: 1 });
+      }
       m.addTrack().addNote({ midi: 64, time: 0, duration: 1 });
       m.addTrack().addNote({ midi: 76, time: 0, duration: 1 });
     });
     expect(parseMidi(bytes, 'x').handSource).toBe('heuristic');
+  });
+
+  it('merges the same key struck by two tracks at once', () => {
+    const bytes = buildMidi((m) => {
+      m.addTrack().addNote({ midi: 72, time: 0, duration: 0.5 });
+      m.addTrack().addNote({ midi: 72, time: 0.01, duration: 1 });
+      m.addTrack().addNote({ midi: 48, time: 0, duration: 1 });
+    });
+    const notes = parseMidi(bytes, 'x').notes.filter((n) => n.pitch === 72);
+    expect(notes).toHaveLength(1);
+    expect(notes[0]!.duration).toBeCloseTo(1);
+  });
+
+  it('hands a chord note out of reach to the other hand', () => {
+    const bytes = buildMidi((m) => {
+      const rh = m.addTrack();
+      rh.name = 'Right';
+      rh.addNote({ midi: 75, time: 0, duration: 1 });
+      const lh = m.addTrack();
+      lh.name = 'Left';
+      for (const midi of [36, 48, 67]) lh.addNote({ midi, time: 0, duration: 1 });
+    });
+    const hands = Object.fromEntries(parseMidi(bytes, 'x').notes.map((n) => [n.pitch, n.hand]));
+    expect(hands).toEqual({ 36: 'left', 48: 'left', 67: 'right', 75: 'right' });
   });
 
   it('uses the embedded title and decodes UTF-8 text', () => {
@@ -169,6 +221,22 @@ describe('handsByTrack', () => {
       [1, 'left'],
       [2, 'right'],
     ]);
+  });
+
+  it('reads LilyPond staff names like up, upII, and down', () => {
+    const hands = handsByTrack([
+      { index: 0, name: 'up:', meanPitch: 70 },
+      { index: 1, name: 'upII', meanPitch: 62 },
+      { index: 2, name: 'down', meanPitch: 50 },
+      { index: 3, name: 'downIII:', meanPitch: 55 },
+    ]);
+    expect([...hands!.values()]).toEqual(['right', 'right', 'left', 'left']);
+    expect(
+      handsByTrack([
+        { index: 0, name: 'update', meanPitch: 70 },
+        { index: 1, name: 'x', meanPitch: 50 },
+      ]),
+    ).not.toBeNull();
   });
 });
 

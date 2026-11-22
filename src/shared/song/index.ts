@@ -1,5 +1,13 @@
 export { AUTO_HANDS, handsByMajority, resolveHand, type HandOverride } from './handOverride';
-export { handBySplit, handsByTrack, SPLIT_PITCH, type TrackSummary } from './hands';
+export {
+  handBySplit,
+  handsByPlayability,
+  handsByTrack,
+  MAX_UNPLAYABLE,
+  SPLIT_PITCH,
+  type TrackNote,
+  type TrackSummary,
+} from './hands';
 export { beatTicks, measureStartTicks, type TickBeat, type TickTimeSignature } from './measures';
 export { decodeMidiText, isPlaceholderTitle } from './midiText';
 export { noteName, pitchClassName } from './noteName';
