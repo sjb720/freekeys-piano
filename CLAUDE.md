@@ -49,5 +49,6 @@ FreeKeys: an open-source Electron piano teacher. Read `docs/PLAN.md` for archite
 | `pnpm typecheck`                          | `tsc` for node and web projects                             |
 | `pnpm test`                               | Vitest (unit tests + lint rule tests)                       |
 | `pnpm package:linux` / `pnpm package:win` | Installers in `release/`                                    |
+| `pnpm release`                            | Pick a version, bump, tag, and push to publish a release    |
 
 On WSL, Electron needs `--no-sandbox` (e.g. `pnpm dev -- --no-sandbox`).

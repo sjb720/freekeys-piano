@@ -25,6 +25,7 @@
     "package:linux": "pnpm build && electron-builder --linux --publish never",
     "package:win": "pnpm build && electron-builder --win --publish never",
     "format:check": "prettier --check .",
+    "release": "node scripts/release.mts",
     "demos": "node scripts/generate-demos.mts"
   },
   "dependencies": {

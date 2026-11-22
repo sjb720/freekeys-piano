@@ -28,9 +28,9 @@ pnpm dev
 
 ## Releasing
 
-1. Bump `version` in `package.json` and commit.
-2. Tag and push: `git tag v0.2.0 && git push origin v0.2.0`.
-3. The Release workflow checks that the tag matches `package.json`, runs lint and tests, builds the Windows and Linux packages, and publishes a GitHub Release with generated notes. `v0.x` releases are marked as pre-releases.
+Run `pnpm release` on an up-to-date, clean `main`. It shows the current version and lets you pick patch, minor, major, or a custom version (or the current version if it was never tagged). It then runs lint, typecheck, and tests, bumps `package.json`, commits `Release vX.Y.Z`, tags it, and asks before pushing. Skip the menu with `pnpm release minor` (or `patch`, `major`, `current`, `1.2.3`); add `--skip-checks` to skip the local checks.
+
+Pushing the tag starts the Release workflow. It checks that the tag matches `package.json`, runs lint and tests, builds the Windows and Linux packages, and publishes a GitHub Release with generated notes. `v0.x` releases are marked as pre-releases.
 
 Contributor rules live in [CLAUDE.md](CLAUDE.md); module docs in [docs/](docs/README.md).
 
