@@ -22,7 +22,8 @@ export class MidiInput {
         access.onstatechange = () => this.refresh();
         this.refresh();
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        console.error('MIDI access failed', error);
         this.starting = null;
       });
     return this.starting;

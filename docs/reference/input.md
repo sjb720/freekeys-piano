@@ -20,4 +20,4 @@ Every source emits `NoteInputEvent { type: 'on'|'off', pitch, velocity (0..1), s
 
 Touch input comes from `PianoKeyboard` in the scene, which `SongStage` forwards to `inputHub` with `source: 'touch'`. Touch notes also sound through the sampler; MIDI notes don't, because the keyboard makes its own sound.
 
-Electron only grants the `midi` permission (`src/main/permissions.ts`).
+Electron only grants the `midi` and `midiSysex` permissions (`src/main/permissions.ts`). Chromium requests `midiSysex` for every `requestMIDIAccess()` call, so granting only `midi` silently blocks all MIDI input. A failed `MidiInput.start()` logs `MIDI access failed`.
