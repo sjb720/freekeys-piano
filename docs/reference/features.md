@@ -4,12 +4,12 @@ Domain components composed from `ui/`.
 
 ## `shell/`
 
-| Name         | Props / Signature                            | Description                                         |
-| ------------ | -------------------------------------------- | --------------------------------------------------- |
-| `AppShell`   | `children`                                   | Full-height app frame. Used by `pages/_layout.tsx`. |
-| `Page`       | `title`, `back=true`, `actions?`, `children` | Standard page: header plus scrollable padded body.  |
-| `PageHeader` | `title`, `back=true`, `actions?`             | Back button, title, right-aligned actions.          |
-| `useAppInfo` | `() => AppInfo \| null`                      | App version and platform from main.                 |
+| Name         | Props / Signature                                            | Description                                                                                     |
+| ------------ | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `AppShell`   | `children`                                                   | Full-height app frame. Used by `pages/_layout.tsx`.                                             |
+| `Page`       | `title`, `back=true`, `actions?`, `narrow=false`, `children` | Standard page: header plus scrollable padded body. `narrow` centers the body in a 760px column. |
+| `PageHeader` | `title`, `back=true`, `actions?`                             | Back button, title, right-aligned actions.                                                      |
+| `useAppInfo` | `() => AppInfo \| null`                                      | App version and platform from main.                                                             |
 
 ## `stage/`
 
@@ -35,23 +35,25 @@ Domain components composed from `ui/`.
 
 ## `settings/`
 
-| Name           | Props        | Description                                                                                                                                      |
-| -------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `SettingsForm` | —            | Every registry setting, grouped by section, with the active profile's name. Sections whose settings are all app-level are marked "All profiles". |
-| `SettingField` | `settingKey` | Renders the control declared in the registry: slider, toggle, segmented, theme, or MIDI device.                                                  |
+| Name               | Props        | Description                                                                                     |
+| ------------------ | ------------ | ----------------------------------------------------------------------------------------------- |
+| `SettingsSections` | `layer`      | The registry settings for one layer (`profile` or `app`), each section a heading over a `Card`. |
+| `SettingField`     | `settingKey` | Renders the control declared in the registry: slider, toggle, segmented, theme, or MIDI device. |
 
 ## `library/`
 
-| Name                                                       | Props / Signature                      | Description                                                                                                               |
-| ---------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `SongList`                                                 | `songs`, `hand`, `onSelect`            | Song rows: duration, source, the top difficulty factor (level 3 and up), a favorite star, and the level badge for `hand`. |
-| `LibraryFilters`                                           | —                                      | Search, sort, favorites, level band, and rank-by-hand. Bound to `useSongQueryStore`.                                      |
-| `FoldersSheet`                                             | `open`, `onClose`                      | Lists library folders with remove, add, and rescan actions, plus scan status.                                             |
-| `ScanStatusText`                                           | —                                      | "Analyzing songs… n of m" while scanning, or the count of unreadable files. Renders nothing when idle and clean.          |
-| `DifficultyBreakdown`                                      | `song`                                 | Overall level and score, a meter for each hand, and "What makes it hard".                                                 |
-| `LevelBadge`                                               | `level`, `size?`                       | `Badge` toned by band.                                                                                                    |
-| `useSong`                                                  | `(id) => SongRef \| null \| undefined` | From the library store, falling back to `songs:get`. `undefined` while loading.                                           |
-| `levelTone` / `levelLabel` / `factorText` / `SOURCE_LABEL` |                                        | Display helpers.                                                                                                          |
+| Name                                                       | Props / Signature                      | Description                                                                                                                                                                                      |
+| ---------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SongList`                                                 | `songs`, `hand`, `onSelect`            | Song rows: duration, source, the top difficulty factor (level 3 and up), a favorite star, and a labeled level badge for `hand`.                                                                  |
+| `LibraryFilters`                                           | —                                      | Search plus a sort button (label shows the order and hand) that opens a sheet for order and difficulty-by-hand; level band chips with counts and a Favorites chip. Bound to `useSongQueryStore`. |
+| `SongFolders`                                              | —                                      | Card listing library folders with remove, add, and rescan actions, plus scan status.                                                                                                             |
+| `OpenSongFile`                                             | —                                      | Card with "Open file…", which picks a MIDI file and opens it in the player.                                                                                                                      |
+| `useFolders`                                               | `() => { folders, add, remove }`       | Library folders (`null` while loading) with add and remove actions that refresh them.                                                                                                            |
+| `ScanStatusText`                                           | —                                      | "Analyzing songs… n of m" while scanning, or the count of unreadable files. Renders nothing when idle and clean.                                                                                 |
+| `DifficultyBreakdown`                                      | `song`                                 | Overall level and score, a meter for each hand, and "What makes it hard".                                                                                                                        |
+| `LevelBadge`                                               | `level`, `size?`, `labeled?`           | `Badge` toned by band. `labeled` reads "Level n".                                                                                                                                                |
+| `useSong`                                                  | `(id) => SongRef \| null \| undefined` | From the library store, falling back to `songs:get`. `undefined` while loading.                                                                                                                  |
+| `levelTone` / `levelLabel` / `factorText` / `SOURCE_LABEL` |                                        | Display helpers.                                                                                                                                                                                 |
 
 ## `profiles/`
 
@@ -59,6 +61,7 @@ Domain components composed from `ui/`.
 | ---------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ProfilePicker`                          | —                                              | "Who's playing?" tiles plus Add profile. Picking selects the profile and opens the library. "Manage profiles" turns tiles into edit links.         |
 | `ProfileForm`                            | `profile?`                                     | Name, avatar icon, and color. Creates or saves, then returns to the picker. Edit mode has Delete with a confirmation sheet.                        |
+| `ProfileSummary`                         | —                                              | Card with the active profile's avatar and name, plus Edit and Switch buttons. Top of the settings page.                                            |
 | `ProfileButton`                          | —                                              | The active profile's avatar; tapping it clears the selection and returns to the picker.                                                            |
 | `ProfileAvatar`                          | `icon`, `color`, `size?`, `label?`, `onPress?` | `Avatar` for a profile's icon and color.                                                                                                           |
 | `useProfileGate`                         | `() => boolean`                                | Used by the root layout. Until profiles load it returns false; with no active profile it redirects every path except `/` and `/profiles/*` to `/`. |

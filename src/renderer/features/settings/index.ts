@@ -1,2 +1,2 @@
 export { SettingField } from './SettingField';
-export { SettingsForm } from './SettingsForm';
+export { SettingsSections } from './SettingsSections';

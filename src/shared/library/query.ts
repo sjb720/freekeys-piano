@@ -72,3 +72,22 @@ export function querySongs(songs: readonly SongRef[], query: SongQuery): SongRef
     })
     .sort(compare[query.sort]);
 }
+
+export function bandCounts(songs: readonly SongRef[], query: SongQuery): Record<LevelBand, number> {
+  const counts: Record<LevelBand, number> = { all: 0, beginner: 0, intermediate: 0, advanced: 0 };
+  for (const song of querySongs(songs, { ...query, band: 'all' })) {
+    counts.all++;
+    counts[bandOf(songLevel(song, query.hand))]++;
+  }
+  return counts;
+}
+
+export const isFiltered = (query: SongQuery) =>
+  query.search.trim() !== '' || query.band !== 'all' || query.favorites;
+
+export const clearFilters = (query: SongQuery): SongQuery => ({
+  ...query,
+  search: '',
+  band: 'all',
+  favorites: false,
+});

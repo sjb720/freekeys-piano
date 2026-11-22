@@ -60,12 +60,14 @@ See `ipc.md`.
 
 ## `library/`
 
-| Name                               | Signature                                 | Description                                                                                                                                                              |
-| ---------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `querySongs`                       | `(songs, SongQuery) => SongRef[]`         | Filters by favorites, level band, and accent-insensitive title terms. Sorts by `easiest`, `hardest`, `title`, or `recent`, using the overall score or the chosen hand's. |
-| `SongQuery` / `DEFAULT_SONG_QUERY` | `{ search, band, hand, sort, favorites }` |                                                                                                                                                                          |
-| `LEVEL_BANDS` / `bandOf(level)`    |                                           | `beginner` 1–3, `intermediate` 4–6, `advanced` 7–10, plus `all`.                                                                                                         |
-| `songScore` / `songLevel`          | `(song, hand)`                            | Overall values for `both`, otherwise that hand's.                                                                                                                        |
+| Name                               | Signature                                             | Description                                                                                                                                                              |
+| ---------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `querySongs`                       | `(songs, SongQuery) => SongRef[]`                     | Filters by favorites, level band, and accent-insensitive title terms. Sorts by `easiest`, `hardest`, `title`, or `recent`, using the overall score or the chosen hand's. |
+| `SongQuery` / `DEFAULT_SONG_QUERY` | `{ search, band, hand, sort, favorites }`             |                                                                                                                                                                          |
+| `LEVEL_BANDS` / `bandOf(level)`    |                                                       | `beginner` 1–3, `intermediate` 4–6, `advanced` 7–10, plus `all`.                                                                                                         |
+| `songScore` / `songLevel`          | `(song, hand)`                                        | Overall values for `both`, otherwise that hand's.                                                                                                                        |
+| `bandCounts`                       | `(songs, SongQuery) => Record<LevelBand, number>`     | Matching songs per band, applying every filter except the band.                                                                                                          |
+| `isFiltered` / `clearFilters`      | `(SongQuery) => boolean` / `(SongQuery) => SongQuery` | Whether search, band, or favorites narrow the list; reset those three, keeping sort and hand.                                                                            |
 
 ## `profiles/`
 

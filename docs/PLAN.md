@@ -164,16 +164,17 @@ The sampler plays the inactive hand, accompaniment, the metronome, and preview t
 
 The in-house router discovers pages with `import.meta.glob('/src/renderer/pages/**/*.tsx')`, using hash history. Production pages are served from a custom `app://` protocol so `fetch` works for bundled assets.
 
-| File                                           | Route                                   |
-| ---------------------------------------------- | --------------------------------------- |
-| `index.tsx`                                    | `/` (profile picker)                    |
-| `profiles/new.tsx`, `profiles/[profileId].tsx` | `/profiles/new`, `/profiles/:profileId` |
-| `library/index.tsx`                            | `/library`                              |
-| `song/[songId].tsx`                            | `/song/:songId`                         |
-| `play/[songId].tsx`                            | `/play/:songId`                         |
-| `settings/index.tsx`                           | `/settings`                             |
-| `_layout.tsx`                                  | layout wrapping its folder              |
-| `[...rest].tsx`                                | catch-all                               |
+| File                                           | Route                                       |
+| ---------------------------------------------- | ------------------------------------------- |
+| `index.tsx`                                    | `/` (profile picker)                        |
+| `profiles/new.tsx`, `profiles/[profileId].tsx` | `/profiles/new`, `/profiles/:profileId`     |
+| `library/index.tsx`                            | `/library`                                  |
+| `song/[songId].tsx`                            | `/song/:songId`                             |
+| `play/[songId].tsx`                            | `/play/:songId`                             |
+| `settings/index.tsx`                           | `/settings` (profile settings, System menu) |
+| `settings/songs.tsx`, `settings/devices.tsx`   | `/settings/songs`, `/settings/devices`      |
+| `_layout.tsx`                                  | layout wrapping its folder                  |
+| `[...rest].tsx`                                | catch-all                                   |
 
 Pages are lazy-loaded. Params are typed.
 
@@ -181,7 +182,7 @@ Pages are lazy-loaded. Params are typed.
 
 - On launch, a profile picker shows a tile grid plus an "Add profile" tile. Profiles are unlimited, each with a name, avatar (icon and color), and their own settings, including theme and key labels. Favorites are per profile. An optional setting auto-selects the last-used profile.
 - Settings have two layers:
-  - **App**: MIDI devices, audio output device, kiosk/fullscreen. Library folders are library data, managed from the library page.
+  - **App**: MIDI devices, audio output device, kiosk/fullscreen. Library folders are library data, managed from Settings → Songs, which also opens single files.
   - **Profile**: theme, hand colors, default mode, wait tolerance, mic sensitivity, note speed, inactive-hand behavior.
 - A profile value overrides an app value when both exist.
 - **Schema-driven**: every setting is declared once in `shared/settings` with key, layer, type, default, label, and control. The settings page renders from that registry using `ui/` controls. Adding a setting means adding one registry entry.

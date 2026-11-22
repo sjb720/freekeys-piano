@@ -1,8 +1,10 @@
 export { DifficultyBreakdown } from './DifficultyBreakdown';
 export { factorText, levelLabel, levelTone, SOURCE_LABEL } from './difficulty';
-export { FoldersSheet, type FoldersSheetProps } from './FoldersSheet';
 export { LevelBadge, type LevelBadgeProps } from './LevelBadge';
 export { LibraryFilters } from './LibraryFilters';
+export { OpenSongFile } from './OpenSongFile';
 export { ScanStatusText } from './ScanStatusText';
+export { SongFolders } from './SongFolders';
 export { SongList, type SongListProps } from './SongList';
+export { useFolders } from './useFolders';
 export { useSong } from './useSong';

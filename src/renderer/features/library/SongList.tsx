@@ -39,7 +39,7 @@ export function SongList({ songs, hand, onSelect }: SongListProps) {
           trailing={
             <Stack direction="row" align="center" gap="sm">
               {song.favorite && <Icon icon={Star} size="sm" />}
-              <LevelBadge level={songLevel(song, hand)} />
+              <LevelBadge level={songLevel(song, hand)} labeled />
             </Stack>
           }
         />

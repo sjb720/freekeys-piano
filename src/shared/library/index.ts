@@ -1,5 +1,8 @@
 export {
+  bandCounts,
   bandOf,
+  clearFilters,
+  isFiltered,
   DEFAULT_SONG_QUERY,
   LEVEL_BAND_KEYS,
   LEVEL_BANDS,

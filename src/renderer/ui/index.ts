@@ -2,6 +2,8 @@ export { Avatar, type AvatarProps } from './Avatar';
 export { Badge, type BadgeProps } from './Badge';
 export { BarChart, type Bar, type BarChartProps } from './BarChart';
 export { Button, type ButtonProps } from './Button';
+export { Card, type CardProps } from './Card';
+export { Chip, type ChipProps } from './Chip';
 export { ChoiceGrid, type Choice, type ChoiceGridProps } from './ChoiceGrid';
 export { Field, type FieldProps } from './Field';
 export { Icon, type IconProps, type IconSize } from './Icon';

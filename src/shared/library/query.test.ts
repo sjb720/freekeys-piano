@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { SongRef } from '../ipc';
-import { DEFAULT_SONG_QUERY, querySongs, type SongQuery } from './query';
+import {
+  bandCounts,
+  clearFilters,
+  DEFAULT_SONG_QUERY,
+  isFiltered,
+  querySongs,
+  type SongQuery,
+} from './query';
 
 const song = (
   id: string,
@@ -62,5 +69,42 @@ describe('querySongs', () => {
 
   it('shows only favorites when asked', () => {
     expect(ids({ favorites: true })).toEqual(['b']);
+  });
+});
+
+describe('bandCounts', () => {
+  it('counts each band, ignoring the selected band but honoring other filters', () => {
+    const query = { ...DEFAULT_SONG_QUERY, band: 'advanced' as const };
+    expect(bandCounts(songs, query)).toEqual({ all: 3, beginner: 1, intermediate: 1, advanced: 1 });
+    expect(bandCounts(songs, { ...query, favorites: true })).toEqual({
+      all: 1,
+      beginner: 1,
+      intermediate: 0,
+      advanced: 0,
+    });
+  });
+
+  it('uses the hand level', () => {
+    expect(bandCounts(songs, { ...DEFAULT_SONG_QUERY, hand: 'left' })).toEqual({
+      all: 3,
+      beginner: 2,
+      intermediate: 1,
+      advanced: 0,
+    });
+  });
+});
+
+describe('isFiltered / clearFilters', () => {
+  it('treats search, band, and favorites as filters but not sort or hand', () => {
+    expect(isFiltered({ ...DEFAULT_SONG_QUERY, sort: 'title', hand: 'left' })).toBe(false);
+    expect(isFiltered({ ...DEFAULT_SONG_QUERY, search: ' a ' })).toBe(true);
+    const cleared = clearFilters({
+      ...DEFAULT_SONG_QUERY,
+      band: 'beginner',
+      favorites: true,
+      sort: 'title',
+    });
+    expect(isFiltered(cleared)).toBe(false);
+    expect(cleared.sort).toBe('title');
   });
 });
