@@ -1,0 +1,51 @@
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-lg);
+  color: var(--color-avatar-ink);
+}
+
+.neutral {
+  border: 2px dashed var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.sm {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+}
+
+.md {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+}
+
+.lg {
+  width: 88px;
+  height: 88px;
+}
+
+.xl {
+  width: 128px;
+  height: 128px;
+}
+
+.button {
+  cursor: pointer;
+  transition: transform var(--motion-fast);
+}
+
+.button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.button:active {
+  transform: scale(0.94);
+}

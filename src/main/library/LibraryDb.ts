@@ -1,4 +1,5 @@
-import { DatabaseSync } from 'node:sqlite';
+import type { DatabaseSync } from 'node:sqlite';
+import { transaction } from '../db';
 import { ANALYSIS_VERSION, type SongSummary } from '@shared/analysis';
 import type { SongRef, SongSource } from '@shared/ipc';
 import { AUTO_HANDS, type HandOverride } from '@shared/song';
@@ -13,32 +14,6 @@ export type FileRow = {
 };
 
 export type FileInfo = Omit<FileRow, 'songId'>;
-
-const SCHEMA = `
-create table if not exists folders (path text primary key, added_at integer not null);
-create table if not exists songs (
-  id text primary key,
-  title text not null,
-  duration real not null,
-  note_count integer not null,
-  hand_source text not null,
-  difficulty text not null,
-  analysis_version integer not null,
-  hands text,
-  favorite integer not null default 0,
-  added_at integer not null
-);
-create table if not exists files (
-  path text primary key,
-  song_id text references songs(id),
-  source text not null,
-  folder text,
-  mtime real not null,
-  size integer not null
-);
-create index if not exists files_song on files(song_id);
-create index if not exists files_folder on files(folder);
-`;
 
 const SOURCE_RANK: Record<SongSource, number> = { bundled: 0, library: 1, file: 2 };
 
@@ -56,7 +31,9 @@ type SongRow = {
 };
 
 const SONG_SELECT = `
-  select s.*, f.source from songs s
+  select s.*, f.source,
+    exists(select 1 from favorites where profile_id = :profile and song_id = s.id) as favorite
+  from songs s
   join files f on f.path = (
     select path from files where song_id = s.id
     order by case source when 'bundled' then 0 when 'library' then 1 else 2 end, path limit 1
@@ -78,27 +55,10 @@ function toRef(row: SongRow): SongRef {
 }
 
 export class LibraryDb {
-  private readonly db: DatabaseSync;
-
-  constructor(path: string) {
-    this.db = new DatabaseSync(path);
-    this.db.exec('pragma journal_mode = wal; pragma foreign_keys = on;');
-    this.db.exec(SCHEMA);
-  }
-
-  close(): void {
-    this.db.close();
-  }
+  constructor(private readonly db: DatabaseSync) {}
 
   transaction(fn: () => void): void {
-    this.db.exec('begin');
-    try {
-      fn();
-      this.db.exec('commit');
-    } catch (error) {
-      this.db.exec('rollback');
-      throw error;
-    }
+    transaction(this.db, fn);
   }
 
   folders(): string[] {
@@ -188,12 +148,13 @@ export class LibraryDb {
       );
   }
 
-  listSongs(): SongRef[] {
-    return (this.db.prepare(SONG_SELECT).all() as SongRow[]).map(toRef);
+  listSongs(profile: string | null): SongRef[] {
+    return (this.db.prepare(SONG_SELECT).all({ profile }) as SongRow[]).map(toRef);
   }
 
-  getSong(id: string): SongRef | null {
-    const row = this.db.prepare(`${SONG_SELECT} where s.id = ?`).get(id) as SongRow | undefined;
+  getSong(id: string, profile: string | null): SongRef | null {
+    const row = this.db.prepare(`${SONG_SELECT} where s.id = :id`).get({ profile, id }) as
+      SongRow | undefined;
     return row ? toRef(row) : null;
   }
 
@@ -217,8 +178,11 @@ export class LibraryDb {
     });
   }
 
-  setFavorite(id: string, favorite: boolean): void {
-    this.db.prepare('update songs set favorite = ? where id = ?').run(favorite ? 1 : 0, id);
+  setFavorite(profile: string, id: string, favorite: boolean): void {
+    const sql = favorite
+      ? 'insert or ignore into favorites (profile_id, song_id) values (?, ?)'
+      : 'delete from favorites where profile_id = ? and song_id = ?';
+    this.db.prepare(sql).run(profile, id);
   }
 
   setHands(id: string, hands: HandOverride): void {

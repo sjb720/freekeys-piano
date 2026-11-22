@@ -2,7 +2,10 @@ import { copyFileSync, mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { DatabaseSync } from 'node:sqlite';
+import { openDatabase } from '../src/main/db';
 import { analyzeFile, Library, type AnalyzeRunner } from '../src/main/library';
+import { Profiles } from '../src/main/profiles';
 
 const demos = join(process.cwd(), 'resources', 'songs');
 const inline: AnalyzeRunner = async (paths, overrides, onResult) => {
@@ -12,6 +15,8 @@ const inline: AnalyzeRunner = async (paths, overrides, onResult) => {
 describe('Library', () => {
   let dir: string;
   let library: Library;
+  let profiles: Profiles;
+  let db: DatabaseSync;
   let runs: number;
 
   beforeEach(() => {
@@ -20,8 +25,12 @@ describe('Library', () => {
     mkdirSync(join(dir, 'music', 'nested'), { recursive: true });
     copyFileSync(join(demos, 'c-major-scale.mid'), join(dir, 'bundled', 'scale.mid'));
     runs = 0;
+    db = openDatabase(join(dir, 'app.db'));
+    profiles = new Profiles(db);
+    profiles.select(profiles.create({ name: 'Sam', icon: 'cat', color: 1 }).id);
     library = new Library({
-      dbPath: join(dir, 'library.db'),
+      db,
+      profile: profiles.activeIdOrNull,
       bundledDir: join(dir, 'bundled'),
       runner: (paths, overrides, onResult) => {
         runs += paths.length;
@@ -32,7 +41,7 @@ describe('Library', () => {
   });
 
   afterEach(() => {
-    library.close();
+    db.close();
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -90,6 +99,17 @@ describe('Library', () => {
     expect(after.favorite).toBe(true);
     expect(after.hands).toEqual({ kind: 'swap' });
     expect(after.difficulty.left.score).toBe(song!.difficulty.right.score);
+  });
+
+  it('keeps favorites per profile', async () => {
+    await library.scanner.scan();
+    const [song] = library.list();
+    library.setFavorite(song!.id, true);
+    const other = profiles.create({ name: 'Alex', icon: 'dog', color: 2 });
+    profiles.select(other.id);
+    expect(library.get(song!.id)?.favorite).toBe(false);
+    profiles.delete(other.id);
+    expect(profiles.active()).toBeNull();
   });
 
   it('imports a single file', async () => {

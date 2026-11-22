@@ -1,0 +1,28 @@
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.choice {
+  display: inline-flex;
+  padding: 4px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  cursor: pointer;
+  transition: transform var(--motion-fast);
+}
+
+.choice:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.choice:active {
+  transform: scale(0.94);
+}
+
+.selected {
+  border-color: var(--color-accent);
+}

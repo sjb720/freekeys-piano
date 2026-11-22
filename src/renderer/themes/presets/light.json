@@ -29,6 +29,17 @@
     "highwayBg": "#eceef5",
     "highwayGrid": "#d6d9e3",
     "hitLine": "#5b4be0",
-    "loopMarker": "#c27c0e"
+    "loopMarker": "#c27c0e",
+    "keyLabel": "#8a90a0",
+    "keyLabelOnBlack": "#b8bdc9",
+    "avatarInk": "#ffffff",
+    "avatar1": "#dc2626",
+    "avatar2": "#ea580c",
+    "avatar3": "#ca8a04",
+    "avatar4": "#16a34a",
+    "avatar5": "#0d9488",
+    "avatar6": "#2563eb",
+    "avatar7": "#7c3aed",
+    "avatar8": "#db2777"
   }
 }

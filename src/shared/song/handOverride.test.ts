@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveHand } from './handOverride';
-import { noteName } from './noteName';
+import { noteName, pitchClassName } from './noteName';
 
 describe('resolveHand', () => {
   const note = { pitch: 62, autoHand: 'left' as const };
@@ -25,5 +25,6 @@ describe('noteName', () => {
     expect(noteName(61)).toBe('C#4');
     expect(noteName(21)).toBe('A0');
     expect(noteName(108)).toBe('C8');
+    expect(pitchClassName(70)).toBe('A#');
   });
 });

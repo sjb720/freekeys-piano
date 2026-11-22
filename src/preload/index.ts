@@ -31,6 +31,18 @@ const api: Api = {
     status: () => invoke('library:status'),
     onStatus: (listener) => on('library:status', listener),
   },
+  profiles: {
+    list: () => invoke('profiles:list'),
+    active: () => invoke('profiles:active'),
+    create: (input) => invoke('profiles:create', input),
+    update: (id, input) => invoke('profiles:update', id, input),
+    delete: (id) => invoke('profiles:delete', id),
+    select: (id) => invoke('profiles:select', id),
+  },
+  settings: {
+    load: () => invoke('settings:load'),
+    set: (key, value) => invoke('settings:set', key, value),
+  },
 };
 
 contextBridge.exposeInMainWorld('api', api);

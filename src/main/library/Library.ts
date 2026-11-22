@@ -1,5 +1,5 @@
 import { stat, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import type { DatabaseSync } from 'node:sqlite';
 import type { ScanStatus, SongFile, SongRef } from '@shared/ipc';
 import type { HandOverride } from '@shared/song';
 import { analyzeFile } from './analyzeFile';
@@ -7,7 +7,8 @@ import { LibraryDb } from './LibraryDb';
 import { Scanner, type AnalyzeRunner } from './Scanner';
 
 export type LibraryOptions = {
-  dbPath: string;
+  db: DatabaseSync;
+  profile: () => string | null;
   bundledDir: string;
   runner: AnalyzeRunner;
   onStatus: (status: ScanStatus) => void;
@@ -17,8 +18,11 @@ export class Library {
   readonly db: LibraryDb;
   readonly scanner: Scanner;
 
-  constructor({ dbPath, bundledDir, runner, onStatus }: LibraryOptions) {
-    this.db = new LibraryDb(dbPath);
+  private readonly profile: () => string | null;
+
+  constructor({ db, profile, bundledDir, runner, onStatus }: LibraryOptions) {
+    this.db = new LibraryDb(db);
+    this.profile = profile;
     this.scanner = new Scanner(
       this.db,
       () => [
@@ -30,12 +34,8 @@ export class Library {
     );
   }
 
-  close(): void {
-    this.db.close();
-  }
-
-  list = (): SongRef[] => this.db.listSongs();
-  get = (id: string): SongRef | null => this.db.getSong(id);
+  list = (): SongRef[] => this.db.listSongs(this.profile());
+  get = (id: string): SongRef | null => this.db.getSong(id, this.profile());
   folders = (): string[] => this.db.folders();
 
   addFolder(path: string): string[] {
@@ -74,7 +74,9 @@ export class Library {
   }
 
   setFavorite(id: string, favorite: boolean): void {
-    this.db.setFavorite(id, favorite);
+    const profile = this.profile();
+    if (!profile) throw new Error('No profile selected.');
+    this.db.setFavorite(profile, id, favorite);
     this.scanner.changed();
   }
 
@@ -88,5 +90,3 @@ export class Library {
     return this.get(id);
   }
 }
-
-export const libraryDbPath = (userData: string) => join(userData, 'library.db');

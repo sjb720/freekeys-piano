@@ -2,10 +2,12 @@ import { join } from 'node:path';
 import { app, BrowserWindow } from 'electron';
 import { registerHandlers } from './handlers';
 import { broadcast } from './ipc';
-import { Library, libraryDbPath } from './library';
+import { databasePath, openDatabase } from './db';
+import { Library } from './library';
 import { runInUtilityProcess } from './library/utilityRunner';
 import { rendererDir, resourcesDir } from './paths';
 import { configurePermissions } from './permissions';
+import { Profiles } from './profiles';
 import { registerSchemePrivileges, serveDirectory } from './protocol';
 import { createMainWindow } from './window';
 
@@ -14,13 +16,16 @@ registerSchemePrivileges();
 app.whenReady().then(() => {
   configurePermissions();
   serveDirectory(rendererDir());
+  const db = openDatabase(databasePath(app.getPath('userData')));
+  const profiles = new Profiles(db);
   const library = new Library({
-    dbPath: libraryDbPath(app.getPath('userData')),
+    db,
+    profile: profiles.activeIdOrNull,
     bundledDir: join(resourcesDir(), 'songs'),
     runner: runInUtilityProcess,
     onStatus: (status) => broadcast('library:status', status),
   });
-  registerHandlers(library);
+  registerHandlers(library, profiles);
   createMainWindow();
   void library.scanner
     .scan()
@@ -29,7 +34,7 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
-  app.on('will-quit', () => library.close());
+  app.on('will-quit', () => db.close());
 });
 
 app.on('window-all-closed', () => {

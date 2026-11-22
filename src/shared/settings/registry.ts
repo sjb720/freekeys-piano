@@ -36,6 +36,9 @@ export const HAND_FOCUS_LABELS: Record<HandFocus, string> = {
   right: 'Right',
 };
 
+export const KEY_LABEL_MODES = ['off', 'c', 'white', 'all'] as const;
+export type KeyLabelMode = (typeof KEY_LABEL_MODES)[number];
+
 export const OTHER_HAND_MODES = ['play', 'mute'] as const;
 export type OtherHandMode = (typeof OTHER_HAND_MODES)[number];
 
@@ -46,6 +49,22 @@ export const SETTINGS = {
     label: 'Theme',
     default: 'dark',
     control: { type: 'theme' },
+  },
+  keyLabels: {
+    layer: 'profile',
+    section: 'Appearance',
+    label: 'Key labels',
+    description: 'Note letters on the on-screen keyboard. C keys show their octave, like C4.',
+    default: 'c' as KeyLabelMode,
+    control: {
+      type: 'segmented',
+      options: [
+        { value: 'off', label: 'Off' },
+        { value: 'c', label: 'C only' },
+        { value: 'white', label: 'White keys' },
+        { value: 'all', label: 'All keys' },
+      ],
+    },
   },
   practiceMode: {
     layer: 'profile',
@@ -120,3 +139,23 @@ export function formatSettingValue(control: SettingControl, value: unknown): str
   if (control.type !== 'slider' || typeof value !== 'number') return String(value);
   return control.format === 'percent' ? `${Math.round(value * 100)}%` : `${value} s`;
 }
+
+export function isValidSettingValue(
+  key: string,
+  value: unknown,
+): value is SettingValues[SettingKey] {
+  if (!(key in SETTINGS)) return false;
+  const def: SettingDef = SETTINGS[key as SettingKey];
+  if (typeof value !== typeof def.default) return false;
+  const { control } = def;
+  if (control.type === 'segmented') return control.options.some((o) => o.value === value);
+  if (control.type === 'slider') {
+    return (
+      Number.isFinite(value) && (value as number) >= control.min && (value as number) <= control.max
+    );
+  }
+  return true;
+}
+
+export const settingKeysFor = (layer: SettingLayer) =>
+  SETTING_KEYS.filter((k) => SETTINGS[k].layer === layer);

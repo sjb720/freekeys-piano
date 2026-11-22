@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
+import { useProfileGate } from '@renderer/features/profiles';
 import { AppShell } from '@renderer/features/shell';
 
 export default function RootLayout({ children }: { children?: ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+  const allowed = useProfileGate();
+  return <AppShell>{allowed && children}</AppShell>;
 }

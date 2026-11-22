@@ -7,6 +7,7 @@ import {
   type Application,
   type FederatedPointerEvent,
 } from 'pixi.js';
+import type { KeyLabelMode } from '@shared/settings';
 import { forEachNoteInWindow, type Note, type Song } from '@shared/song';
 import { TINT_NONE, type ColorToken, type PixiPalette } from '@renderer/themes';
 import { fitKeyRange, layoutKeys, type KeyLayout } from './keyLayout';
@@ -30,6 +31,7 @@ export type PianoSceneOptions = {
   onKey: (pitch: number, down: boolean) => void;
   palette: PixiPalette;
   fallTime: number;
+  keyLabels: KeyLabelMode;
   scrub: ScrubHandlers;
 };
 
@@ -68,7 +70,7 @@ export class PianoScene {
     corner.destroy();
 
     this.highway = new NoteHighway(this.noteTexture);
-    this.keyboard = new PianoKeyboard(this.palette, options.onKey);
+    this.keyboard = new PianoKeyboard(this.palette, options.onKey, options.keyLabels);
     app.stage.addChild(this.highway, this.hitLine, this.keyboard);
 
     this.highway.eventMode = 'static';
@@ -89,6 +91,10 @@ export class PianoScene {
 
   setFallTime(seconds: number): void {
     this.fallTime = seconds;
+  }
+
+  setKeyLabels(mode: KeyLabelMode): void {
+    this.keyboard.setLabelMode(mode);
   }
 
   destroy(): void {

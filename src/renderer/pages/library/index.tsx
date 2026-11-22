@@ -1,11 +1,12 @@
-import { FolderOpen, Folders } from 'lucide-react';
+import { FolderOpen, Folders, Settings } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { querySongs } from '@shared/library';
 import { FoldersSheet, LibraryFilters, ScanStatusText, SongList } from '@renderer/features/library';
+import { ProfileButton } from '@renderer/features/profiles';
 import { Page } from '@renderer/features/shell';
 import { useNavigate } from '@renderer/router';
 import { useLibraryStore, useSongQueryStore } from '@renderer/state/libraryStore';
-import { Button, Text } from '@renderer/ui';
+import { Button, IconButton, Text } from '@renderer/ui';
 
 export default function LibraryPage() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function LibraryPage() {
   return (
     <Page
       title="Library"
+      back={false}
       actions={
         <>
           <Button icon={Folders} onClick={() => setFoldersOpen(true)}>
@@ -30,6 +32,8 @@ export default function LibraryPage() {
           <Button icon={FolderOpen} onClick={openFile}>
             Open file
           </Button>
+          <IconButton icon={Settings} label="Settings" onClick={() => navigate.to('/settings')} />
+          <ProfileButton />
         </>
       }
     >

@@ -19,14 +19,16 @@ export function SongStage({ player }: { player: Player }) {
   const theme = useActiveTheme();
   const palette = useMemo(() => toPixiPalette(theme), [theme]);
   const fallTime = useSetting('noteFallTime');
+  const keyLabels = useSetting('keyLabels');
   const scene = useRef<PianoScene | null>(null);
-  const latest = useRef({ palette, fallTime });
+  const latest = useRef({ palette, fallTime, keyLabels });
 
   useEffect(() => {
-    latest.current = { palette, fallTime };
+    latest.current = { palette, fallTime, keyLabels };
     scene.current?.setPalette(palette);
     scene.current?.setFallTime(fallTime);
-  }, [palette, fallTime]);
+    scene.current?.setKeyLabels(keyLabels);
+  }, [palette, fallTime, keyLabels]);
 
   const onReady = useCallback(
     (app: Application) => {

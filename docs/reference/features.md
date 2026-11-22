@@ -35,10 +35,10 @@ Domain components composed from `ui/`.
 
 ## `settings/`
 
-| Name           | Props        | Description                                                                                     |
-| -------------- | ------------ | ----------------------------------------------------------------------------------------------- |
-| `SettingsForm` | —            | Every registry setting, grouped by section.                                                     |
-| `SettingField` | `settingKey` | Renders the control declared in the registry: slider, toggle, segmented, theme, or MIDI device. |
+| Name           | Props        | Description                                                                                                                                      |
+| -------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SettingsForm` | —            | Every registry setting, grouped by section, with the active profile's name. Sections whose settings are all app-level are marked "All profiles". |
+| `SettingField` | `settingKey` | Renders the control declared in the registry: slider, toggle, segmented, theme, or MIDI device.                                                  |
 
 ## `library/`
 
@@ -52,3 +52,14 @@ Domain components composed from `ui/`.
 | `LevelBadge`                                               | `level`, `size?`                       | `Badge` toned by band.                                                                                                    |
 | `useSong`                                                  | `(id) => SongRef \| null \| undefined` | From the library store, falling back to `songs:get`. `undefined` while loading.                                           |
 | `levelTone` / `levelLabel` / `factorText` / `SOURCE_LABEL` |                                        | Display helpers.                                                                                                          |
+
+## `profiles/`
+
+| Name                                     | Props / Signature                              | Description                                                                                                                                        |
+| ---------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ProfilePicker`                          | —                                              | "Who's playing?" tiles plus Add profile. Picking selects the profile and opens the library. "Manage profiles" turns tiles into edit links.         |
+| `ProfileForm`                            | `profile?`                                     | Name, avatar icon, and color. Creates or saves, then returns to the picker. Edit mode has Delete with a confirmation sheet.                        |
+| `ProfileButton`                          | —                                              | The active profile's avatar; tapping it clears the selection and returns to the picker.                                                            |
+| `ProfileAvatar`                          | `icon`, `color`, `size?`, `label?`, `onPress?` | `Avatar` for a profile's icon and color.                                                                                                           |
+| `useProfileGate`                         | `() => boolean`                                | Used by the root layout. Until profiles load it returns false; with no active profile it redirects every path except `/` and `/profiles/*` to `/`. |
+| `AVATAR_ICON_COMPONENTS` / `avatarToken` |                                                | Icon key → lucide icon; color index → `avatar1`–`avatar8` token.                                                                                   |

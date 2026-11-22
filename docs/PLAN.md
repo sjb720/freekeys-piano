@@ -164,19 +164,22 @@ The sampler plays the inactive hand, accompaniment, the metronome, and preview t
 
 The in-house router discovers pages with `import.meta.glob('/src/renderer/pages/**/*.tsx')`, using hash history. Production pages are served from a custom `app://` protocol so `fetch` works for bundled assets.
 
-| File                | Route                      |
-| ------------------- | -------------------------- |
-| `index.tsx`         | `/`                        |
-| `library/index.tsx` | `/library`                 |
-| `play/[songId].tsx` | `/play/:songId`            |
-| `_layout.tsx`       | layout wrapping its folder |
-| `[...rest].tsx`     | catch-all                  |
+| File                                           | Route                                   |
+| ---------------------------------------------- | --------------------------------------- |
+| `index.tsx`                                    | `/` (profile picker)                    |
+| `profiles/new.tsx`, `profiles/[profileId].tsx` | `/profiles/new`, `/profiles/:profileId` |
+| `library/index.tsx`                            | `/library`                              |
+| `song/[songId].tsx`                            | `/song/:songId`                         |
+| `play/[songId].tsx`                            | `/play/:songId`                         |
+| `settings/index.tsx`                           | `/settings`                             |
+| `_layout.tsx`                                  | layout wrapping its folder              |
+| `[...rest].tsx`                                | catch-all                               |
 
 Pages are lazy-loaded. Params are typed.
 
 ### Profiles and settings
 
-- On launch, a profile picker shows a tile grid plus an "Add profile" tile. Profiles are unlimited, each with a name, avatar, and theme. An optional setting auto-selects the last-used profile.
+- On launch, a profile picker shows a tile grid plus an "Add profile" tile. Profiles are unlimited, each with a name, avatar (icon and color), and their own settings, including theme and key labels. Favorites are per profile. An optional setting auto-selects the last-used profile.
 - Settings have two layers:
   - **App**: MIDI devices, audio output device, kiosk/fullscreen. Library folders are library data, managed from the library page.
   - **Profile**: theme, hand colors, default mode, wait tolerance, mic sensitivity, note speed, inactive-hand behavior.

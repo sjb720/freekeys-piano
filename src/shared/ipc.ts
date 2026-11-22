@@ -1,4 +1,6 @@
 import type { SongSummary } from './analysis';
+import type { Profile, ProfileInput } from './profiles';
+import type { SettingValues } from './settings';
 import type { HandOverride } from './song';
 
 export type AppInfo = {
@@ -42,6 +44,14 @@ export interface IpcContract {
   'library:removeFolder': { args: [path: string]; result: string[] };
   'library:rescan': { args: []; result: void };
   'library:status': { args: []; result: ScanStatus };
+  'profiles:list': { args: []; result: Profile[] };
+  'profiles:active': { args: []; result: Profile | null };
+  'profiles:create': { args: [input: ProfileInput]; result: Profile };
+  'profiles:update': { args: [id: string, input: ProfileInput]; result: Profile };
+  'profiles:delete': { args: [id: string]; result: void };
+  'profiles:select': { args: [id: string | null]; result: Profile | null };
+  'settings:load': { args: []; result: Partial<SettingValues> };
+  'settings:set': { args: [key: string, value: unknown]; result: void };
 }
 
 export interface IpcEvents {
@@ -72,5 +82,17 @@ export interface Api {
     rescan(): Promise<void>;
     status(): Promise<ScanStatus>;
     onStatus(listener: (status: ScanStatus) => void): () => void;
+  };
+  profiles: {
+    list(): Promise<Profile[]>;
+    active(): Promise<Profile | null>;
+    create(input: ProfileInput): Promise<Profile>;
+    update(id: string, input: ProfileInput): Promise<Profile>;
+    delete(id: string): Promise<void>;
+    select(id: string | null): Promise<Profile | null>;
+  };
+  settings: {
+    load(): Promise<Partial<SettingValues>>;
+    set(key: string, value: unknown): Promise<void>;
   };
 }
