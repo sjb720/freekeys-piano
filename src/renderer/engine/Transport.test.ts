@@ -74,7 +74,7 @@ describe('Transport', () => {
     expect(t.position()).toBe(10);
     t.play();
     expect(t.position()).toBe(-2);
-    expect(events).toEqual(['seek', 'play', 'end', 'play']);
+    expect(events).toEqual(['seek', 'play', 'end', 'seek', 'play']);
   });
 
   it('replaces state snapshot only on change', () => {

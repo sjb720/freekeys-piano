@@ -59,7 +59,8 @@ export class Transport {
 
   play(): void {
     if (this.state.playing) return;
-    if (this.anchorPosition >= this.state.duration) this.anchorPosition = this.state.start;
+    // Replaying from the end is a seek; schedulers and practice must rewind with it.
+    if (this.anchorPosition >= this.state.duration) this.seek(this.state.start);
     this.anchorTime = this.clock.now();
     this.update({ playing: true }, 'play');
   }

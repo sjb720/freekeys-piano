@@ -67,6 +67,37 @@ describe('Player', () => {
     }
   };
 
+  it('plays notes and clicks again when replayed after the end', () => {
+    const player = create('watch', true);
+    player.transport.play();
+    run(7);
+    expect(player.transport.getState().playing).toBe(false);
+    const firstNotes = played.length;
+    const firstClicks = clicks.length;
+    expect(firstNotes).toBe(4);
+    player.transport.play();
+    run(7);
+    expect(played.length).toBe(firstNotes * 2);
+    expect(clicks.length).toBe(firstClicks * 2);
+    player.destroy();
+  });
+
+  it('waits for notes again when replayed after the end in wait mode', () => {
+    const player = create('wait');
+    player.transport.play();
+    for (const pitch of [60, 48, 62, 64]) {
+      run(3.5);
+      player.handleInput({ type: 'on', pitch, velocity: 1, source: 'midi' });
+      player.handleInput({ type: 'off', pitch, velocity: 0, source: 'midi' });
+    }
+    run(3);
+    expect(player.transport.getState().playing).toBe(false);
+    player.transport.play();
+    run(5);
+    expect(player.position()).toBe(0);
+    player.destroy();
+  });
+
   it('plays every note in watch mode', () => {
     const player = create('watch');
     player.transport.play();
